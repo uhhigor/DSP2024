@@ -1,10 +1,10 @@
 import math
 import random
-
-
 # próbkowanie: 1hz = co 1 sekundę
+
+
 class ContinuousSignal:
-    def __init__(self, A: float, t1: float, d: float, T: float, f: float = 1):
+    def __init__(self, A: float, t1: float, d: float, T: float = 0, f: float = 1):
         self.A = A  # amplituda - wartość maksymalna
         self.t1 = t1  # czas początkowy, poniżej którego sygnał jest równy 0
         self.d = d  # czas trwania sygnału
@@ -55,7 +55,7 @@ class ContinuousSignal:
 
 
 class S1(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1):
+    def __init__(self, A, t1, d, T=0, f=1):
         super().__init__(A, t1, d, T, f)
 
     def __call__(self, n):  # n - numer próbki
@@ -69,7 +69,7 @@ class S1(ContinuousSignal):
 
 
 class S2(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1):
+    def __init__(self, A, t1, d, T=0, f=1):
         super().__init__(A, t1, d, T, f)
 
     def noise(self, x):
@@ -132,9 +132,8 @@ class S5(ContinuousSignal):
 # kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
 class S6(ContinuousSignal):
 
-    def __init__(self, A, t1, d, T, f=1, kw=0.5):
+    def __init__(self, A, t1, d, T, f=1):
         super().__init__(A, t1, d, T, f)
-        self.kw = kw
 
     def __call__(self, n):  # n - numer próbki
         t_n = super().t(n)
@@ -187,6 +186,7 @@ class S8(ContinuousSignal):
             else:
                 return self.A * (1 - k)
 
+
 class S9(ContinuousSignal):
     def __init__(self, A, t1, d, T, f=1, ts=0):
         super().__init__(A, t1, d, T, f)
@@ -218,3 +218,35 @@ class S9(ContinuousSignal):
                 return self.A / 2
             elif t < self.ts:
                 return 0
+
+
+class S10(ContinuousSignal):
+    def __init__(self, A, t1, d, T, f=1, ns=0):
+        super().__init__(A, t1, d, T, f)
+        self.ns = ns
+
+    def __call__(self, n):  # n - numer próbki
+        if n == self.ns:
+            return self.A
+        else:
+            return 0
+
+
+class S11(ContinuousSignal):
+    def __init__(self, A, t1, d, T, f=1, p=0.5):
+        super().__init__(A, t1, d, T, f)
+        self.p = p
+
+    def __call__(self, n):  # n - numer próbki
+        t_n = super().t(n)
+        if t_n < self.t1:
+            return 0
+        elif t_n > self.t1 + self.d:
+            return 0
+        else:
+            rand = random.random()
+            if rand >= self.p:
+                return 0
+            else:
+                return self.A
+
