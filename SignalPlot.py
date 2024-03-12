@@ -7,7 +7,7 @@ import Signal
 t_values = []
 y_values = []
 samples = 1000
-signal: Signal.ContinuousSignal = Signal.S9(10, 0, 10, 5, 100)
+signal: Signal.ContinuousSignal = Signal.S8(10, 0, 10, 2, 100, 0.8)
 for n in range(0, samples):
     t_values.append(signal.t(n))
     y_values.append(signal(n))

@@ -129,36 +129,63 @@ class S5(ContinuousSignal):
             return self.A * math.fabs(math.sin(2.0 * math.pi * (t_n - self.t1) / self.T))
 
 
-# ???
+# kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
 class S6(ContinuousSignal):
 
-    def __init__(self, A, t1, d, T, f=1):
+    def __init__(self, A, t1, d, T, f=1, kw=0.5):
         super().__init__(A, t1, d, T, f)
-        self.kw = A / T
+        self.kw = kw
 
     def __call__(self, n):  # n - numer próbki
         t_n = super().t(n)
-        k = t_n // self.T
         if t_n < self.t1:
             return 0
         elif t_n > self.t1 + self.d:
             return 0
         else:
-            if k * self.T + self.t1 <= t_n < self.kw * self.T + k * self.T + self.t1:
+            if t_n % self.T < self.kw * self.T:
                 return self.A
-            elif self.kw * self.T - k * self.T + self.t1 <= t_n < self.T + k * self.T + self.t1:
+            else:
                 return 0
 
 
-# ???
+# kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
 class S7(ContinuousSignal):
-    pass
+    def __init__(self, A, t1, d, T, f=1, kw=0.5):
+        super().__init__(A, t1, d, T, f)
+        self.kw = kw
+
+    def __call__(self, n):  # n - numer próbki
+        t_n = super().t(n)
+        if t_n < self.t1:
+            return 0
+        elif t_n > self.t1 + self.d:
+            return 0
+        else:
+            if t_n % self.T < self.kw * self.T:
+                return self.A
+            else:
+                return -self.A
 
 
-# ???
+# kw - stosunek czasu trwania zbocza narastającego do okresu podstawowego (0 < kw < 1)
 class S8(ContinuousSignal):
-    pass
+    def __init__(self, A, t1, d, T, f=1, kw=0.5):
+        super().__init__(A, t1, d, T, f)
+        self.kw = kw
 
+    def __call__(self, n):  # n - numer próbki
+        t_n = super().t(n)
+        if t_n < self.t1:
+            return 0
+        elif t_n > self.t1 + self.d:
+            return 0
+        else:
+            k = (t_n % self.T) / self.T
+            if k < self.kw:
+                return self.A * k
+            else:
+                return self.A * (1 - k)
 
 class S9(ContinuousSignal):
     def __init__(self, A, t1, d, T, f=1, ts=0):
