@@ -18,40 +18,109 @@ class ContinuousSignal:
     def t(self, n):  # n - numer próbki, zwraca czas próbki
         return n / self.f
 
-    def average_value(self, x: ()):
+    def continuous_average_value(self, x, f):
         sumxt = 0
+        interval_width = (self.t2 - self.t1) / f
         n = 0
         while self.t(n) < self.t2:
-            sumxt += x(self.t(n))
+            sumxt += x(n) * interval_width
             n += 1
+
         return sumxt / (self.t2 - self.t1)
 
-    def average_value_absolute(self, x: ()):
+    def discrete_average_value(self, x, n):
         sumxt = 0
+        i = 0
+        if isinstance(x, S10):
+            while i < n:
+                sumxt += x(i)
+                i += 1
+        else:
+            while self.t(i) < self.t2:
+                sumxt += x(i)
+                i += 1
+
+        return sumxt / n
+
+    def continuous_average_value_absolute(self, x, f):
+        sumxt = 0
+        interval_width = (self.t2 - self.t1) / f
         n = 0
         while self.t(n) < self.t2:
-            sumxt += math.fabs(x(self.t(n)))
+            sumxt += math.fabs(x(n)) * interval_width
             n += 1
+
         return sumxt / (self.t2 - self.t1)
 
-    def average_power(self, x: ()):
+    def discrete_average_value_absolute(self, x, n):
         sumxt = 0
+        i = 0
+        if isinstance(x, S10):
+            while i < n:
+                sumxt += math.fabs(x(i))
+                i += 1
+        else:
+            while self.t(i) < self.t2:
+                sumxt += math.fabs(x(i))
+                i += 1
+
+        return sumxt / n
+
+    def continuous_average_power(self, x, f):
+        sumxt = 0
+        interval_width = (self.t2 - self.t1) / f
         n = 0
         while self.t(n) < self.t2:
-            sumxt += x(self.t(n)) ** 2
+            sumxt += x(n) ** 2 * interval_width
             n += 1
+
         return sumxt / (self.t2 - self.t1)
 
-    def variance(self, x: ()):
+    def discrete_average_power(self, x, n):
         sumxt = 0
+        i = 0
+        if isinstance(x, S10):
+            while i < n:
+                sumxt += x(i) ** 2
+                i += 1
+        else:
+            while self.t(i) < self.t2:
+                sumxt += x(i) ** 2
+                i += 1
+
+        return sumxt / n
+
+    def continuous_variance(self, x, f):
+        avg_value = self.continuous_average_value(x, f)
+        sumxt = 0
+        interval_width = (self.t2 - self.t1) / f
         n = 0
         while self.t(n) < self.t2:
-            sumxt += (x(self.t(n)) - self.average_value(x)) ** 2
+            sumxt += (x(n) - avg_value) ** 2 * interval_width
             n += 1
+
         return sumxt / (self.t2 - self.t1)
 
-    def effective_value(self, x: ()):
-        return math.sqrt(self.average_power(x))
+    def discrete_variance(self, x, n):
+        avg_value = self.discrete_average_value(x, n)
+        sumxt = 0
+        i = 0
+        if isinstance(x, S10):
+            while i < n:
+                sumxt += (x(i) - avg_value) ** 2
+                i += 1
+        else:
+            while self.t(i) < self.t2:
+                sumxt += (x(i) - avg_value) ** 2
+                i += 1
+
+        return sumxt / n
+
+    def continuous_effective_value(self, x, f):
+        return math.sqrt(self.continuous_average_power(x, f))
+
+    def discrete_effective_value(self, x, n):
+        return math.sqrt(self.discrete_average_power(x, n))
 
 
 class S1(ContinuousSignal):
@@ -132,8 +201,9 @@ class S5(ContinuousSignal):
 # kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
 class S6(ContinuousSignal):
 
-    def __init__(self, A, t1, d, T, f=1):
+    def __init__(self, A, t1, d, T, f=1, kw=0.5):
         super().__init__(A, t1, d, T, f)
+        self.kw = kw
 
     def __call__(self, n):  # n - numer próbki
         t_n = super().t(n)
@@ -226,7 +296,8 @@ class S10(ContinuousSignal):
         self.ns = ns
 
     def __call__(self, n):  # n - numer próbki
-        if n == self.ns:
+        t_n = super().t(n)
+        if t_n == (self.ns/self.f):
             return self.A
         else:
             return 0
@@ -249,4 +320,3 @@ class S11(ContinuousSignal):
                 return 0
             else:
                 return self.A
-
