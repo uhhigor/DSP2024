@@ -3,7 +3,7 @@ import random
 # próbkowanie: 1hz = co 1 sekundę
 
 
-class ContinuousSignal:
+class Signal:
     def __init__(self, A: float, t1: float, d: float, T: float = 0, f: float = 1):
         self.A = A  # amplituda - wartość maksymalna
         self.t1 = t1  # czas początkowy, poniżej którego sygnał jest równy 0
@@ -18,9 +18,9 @@ class ContinuousSignal:
     def t(self, n):  # n - numer próbki, zwraca czas próbki
         return n / self.f
 
-    def continuous_average_value(self, x, f):
+    def continuous_average_value(self, x):
         sumxt = 0
-        interval_width = (self.t2 - self.t1) / f
+        interval_width = (self.t2 - self.t1) / self.f
         n = 0
         while self.t(n) < self.t2:
             sumxt += x(n) * interval_width
@@ -42,9 +42,9 @@ class ContinuousSignal:
 
         return sumxt / n
 
-    def continuous_average_value_absolute(self, x, f):
+    def continuous_average_value_absolute(self, x):
         sumxt = 0
-        interval_width = (self.t2 - self.t1) / f
+        interval_width = (self.t2 - self.t1) / self.f
         n = 0
         while self.t(n) < self.t2:
             sumxt += math.fabs(x(n)) * interval_width
@@ -66,9 +66,9 @@ class ContinuousSignal:
 
         return sumxt / n
 
-    def continuous_average_power(self, x, f):
+    def continuous_average_power(self, x):
         sumxt = 0
-        interval_width = (self.t2 - self.t1) / f
+        interval_width = (self.t2 - self.t1) / self.f
         n = 0
         while self.t(n) < self.t2:
             sumxt += x(n) ** 2 * interval_width
@@ -90,10 +90,10 @@ class ContinuousSignal:
 
         return sumxt / n
 
-    def continuous_variance(self, x, f):
-        avg_value = self.continuous_average_value(x, f)
+    def continuous_variance(self, x):
+        avg_value = self.continuous_average_value(x)
         sumxt = 0
-        interval_width = (self.t2 - self.t1) / f
+        interval_width = (self.t2 - self.t1) / self.f
         n = 0
         while self.t(n) < self.t2:
             sumxt += (x(n) - avg_value) ** 2 * interval_width
@@ -116,15 +116,15 @@ class ContinuousSignal:
 
         return sumxt / n
 
-    def continuous_effective_value(self, x, f):
-        return math.sqrt(self.continuous_average_power(x, f))
+    def continuous_effective_value(self, x):
+        return math.sqrt(self.continuous_average_power(x))
 
     def discrete_effective_value(self, x, n):
         return math.sqrt(self.discrete_average_power(x, n))
 
 
-class S1(ContinuousSignal):
-    def __init__(self, A, t1, d, T=0, f=1):
+class S1(Signal):
+    def __init__(self, A, t1, d, T, f):
         super().__init__(A, t1, d, T, f)
 
     def __call__(self, n):  # n - numer próbki
@@ -137,8 +137,8 @@ class S1(ContinuousSignal):
             return random.uniform(-self.A, self.A)
 
 
-class S2(ContinuousSignal):
-    def __init__(self, A, t1, d, T=0, f=1):
+class S2(Signal):
+    def __init__(self, A, t1, d, T, f):
         super().__init__(A, t1, d, T, f)
 
     def noise(self, x):
@@ -155,8 +155,8 @@ class S2(ContinuousSignal):
             return r + self.noise(t_n)
 
 
-class S3(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1):
+class S3(Signal):
+    def __init__(self, A, t1, d, T, f):
         super().__init__(A, t1, d, T, f)
 
     def __call__(self, n):  # n - numer próbki
@@ -169,8 +169,8 @@ class S3(ContinuousSignal):
             return self.A * math.sin(2.0 * math.pi * (t_n - self.t1) / self.T)
 
 
-class S4(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1):
+class S4(Signal):
+    def __init__(self, A, t1, d, T, f):
         super().__init__(A, t1, d, T, f)
 
     def __call__(self, n):  # n - numer próbki
@@ -184,8 +184,8 @@ class S4(ContinuousSignal):
                 math.sin(2.0 * math.pi * (t_n - self.t1) / self.T)))
 
 
-class S5(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1):
+class S5(Signal):
+    def __init__(self, A, t1, d, T, f):
         super().__init__(A, t1, d, T, f)
 
     def __call__(self, n):  # n - numer próbki
@@ -199,9 +199,9 @@ class S5(ContinuousSignal):
 
 
 # kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
-class S6(ContinuousSignal):
+class S6(Signal):
 
-    def __init__(self, A, t1, d, T, f=1, kw=0.5):
+    def __init__(self, A, t1, d, T, f, kw=0.5):
         super().__init__(A, t1, d, T, f)
         self.kw = kw
 
@@ -219,8 +219,8 @@ class S6(ContinuousSignal):
 
 
 # kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
-class S7(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1, kw=0.5):
+class S7(Signal):
+    def __init__(self, A, t1, d, T, f, kw=0.5):
         super().__init__(A, t1, d, T, f)
         self.kw = kw
 
@@ -238,8 +238,8 @@ class S7(ContinuousSignal):
 
 
 # kw - stosunek czasu trwania zbocza narastającego do okresu podstawowego (0 < kw < 1)
-class S8(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1, kw=0.5):
+class S8(Signal):
+    def __init__(self, A, t1, d, T, f, kw=0.5):
         super().__init__(A, t1, d, T, f)
         self.kw = kw
 
@@ -257,8 +257,8 @@ class S8(ContinuousSignal):
                 return self.A * (1 - k)
 
 
-class S9(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1, ts=0):
+class S9(Signal):
+    def __init__(self, A, t1, d, T, f, ts=0):
         super().__init__(A, t1, d, T, f)
         self.ts = ts
 
@@ -290,21 +290,21 @@ class S9(ContinuousSignal):
                 return 0
 
 
-class S10(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1, ns=0):
+class S10(Signal):
+    def __init__(self, A, t1, d, T, f, ns=0):
         super().__init__(A, t1, d, T, f)
         self.ns = ns
 
     def __call__(self, n):  # n - numer próbki
         t_n = super().t(n)
-        if t_n == (self.ns/self.f):
+        if t_n == (self.ns / self.f):
             return self.A
         else:
             return 0
 
 
-class S11(ContinuousSignal):
-    def __init__(self, A, t1, d, T, f=1, p=0.5):
+class S11(Signal):
+    def __init__(self, A, t1, d, T, f, p=0.5):
         super().__init__(A, t1, d, T, f)
         self.p = p
 
