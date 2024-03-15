@@ -9,7 +9,7 @@ root = Tk()
 root.title("Sygnały")
 main_frame = ttk.Frame(root, padding=10)
 main_frame.grid()
-ttk.Button(main_frame, text="Quit", command=root.destroy).grid(column=1, row=4)
+ttk.Button(main_frame, text="Quit", command=root.destroy).grid(column=1, row=3)
 
 param_frame = ttk.Frame(main_frame, padding=10)
 param_frame.grid(column=0, row=2, columnspan=2)
@@ -34,38 +34,44 @@ dropdown_signal = ttk.OptionMenu(main_frame, selected_signal, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=1, row=1)
 
+def only_numbers(char: chr):
+    return char.isdigit() or char == "."
+
 f_label = ttk.Label(param_frame, text="Częstotliwość próbkowania f: ")
-f_entry = ttk.Entry(param_frame)
+f_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 s_label = ttk.Label(param_frame, text="Liczba próbek n: ")
-s_entry = ttk.Entry(param_frame)
+s_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 A_label = ttk.Label(param_frame, text="Amplituda sygnału A: ")
-A_entry = ttk.Entry(param_frame)
+A_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 t1_label = ttk.Label(param_frame, text="Czas początkowy t1: ")
-t1_entry = ttk.Entry(param_frame)
+t1_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 d_label = ttk.Label(param_frame, text="Czas trwania sygnału d: ")
-d_entry = ttk.Entry(param_frame)
+d_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 T_label = ttk.Label(param_frame, text="Okres podstawowy T: ")
-T_entry = ttk.Entry(param_frame)
+T_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 kw_label = ttk.Label(param_frame, text="Współczynnik kw: ")
-kw_entry = ttk.Entry(param_frame)
+kw_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 ts_label = ttk.Label(param_frame, text="Czas skoku ts: ")
-ts_entry = ttk.Entry(param_frame)
+ts_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 ns_label = ttk.Label(param_frame, text="Numer próbki skoku ns: ")
-ns_entry = ttk.Entry(param_frame)
+ns_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 p_label = ttk.Label(param_frame, text="Prawdopodobieństwo p: ")
-p_entry = ttk.Entry(param_frame)
+p_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 n1_label = ttk.Label(param_frame, text="Numer pierwszej próbki: ")
-n1_entry = ttk.Entry(param_frame)
+n1_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
+
+h_label = ttk.Label(param_frame, text="Liczba przedziałów histogramu: ")
+h_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 
 def show_params(*args):
@@ -83,6 +89,9 @@ def show_params(*args):
     d_entry.grid(column=1, row=4)
     T_label.grid(column=0, row=5)
     T_entry.grid(column=1, row=5)
+
+    h_entry.grid(column=1, row=7)
+    h_label.grid(column=0, row=7)
 
     if selected_signal.get() in ["Sygnał prostokątny", "Sygnał prostokątny symetryczny", "Sygnał trójkątny"]:
         kw_label.grid(column=0, row=6)
@@ -143,9 +152,7 @@ def plot_signal(signal: Signal, samples):
     else:
         ax1.plot(t_values, y_values)
 
-    # plt.subplot(2, 1, 2)
-    # bins = int(input("Histogram: Liczba przedzialów: "))
-    ax2.hist(y_values, bins=5, edgecolor='black')
+    ax2.hist(y_values, bins=int(h_entry.get()), edgecolor='black')
     return fig
 
 
@@ -155,10 +162,10 @@ def show_plot():
     fig = plot_signal(signal, samples)
     canvas = FigureCanvasTkAgg(fig, master=main_frame)
     canvas.draw()
-    canvas.get_tk_widget().grid(column=0, row=3, columnspan=4)
+    canvas.get_tk_widget().grid(column=0, row=4, columnspan=4)
 
 
-ttk.Button(main_frame, text="Show plot", command=show_plot).grid(column=0, row=4)
+ttk.Button(main_frame, text="Generate", command=show_plot).grid(column=0, row=3)
 
 show_params()
 selected_signal.trace("w", show_params)
