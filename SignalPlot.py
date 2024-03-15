@@ -10,8 +10,8 @@ def menu():
     choice = int(input("Wybór: "))
     if choice == 1:
         signal, samples, signal_type = create_signal()
-        create_plot(*values_to_list(signal, samples), signal_type)
         signal_parameters(signal, signal_type, samples)
+        create_plot(*values_to_list(signal, samples), signal_type)
     elif choice == 2:
         signal_operations()
     elif choice == 3:
@@ -72,7 +72,6 @@ def signal_parameters(signal: (), signal_type: int, samples: int):
 
 
 def create_plot(t_values, y_values, signal_type=None):
-
     plt.subplot(2, 1, 1)
     if signal_type == 10 or signal_type == 11:
         plt.scatter(t_values, y_values)
@@ -80,8 +79,7 @@ def create_plot(t_values, y_values, signal_type=None):
         plt.plot(t_values, y_values)
 
     plt.subplot(2, 1, 2)
-    print("Wprowadź liczbę przedzialów:")
-    bins = int(input("Liczba przedzialów: "))
+    bins = int(input("Histogram: Liczba przedzialów: "))
     plt.hist(y_values, bins=bins, edgecolor='black')
     plt.show()
 
@@ -117,30 +115,30 @@ def create_signal():
     signal_type = int(input("Wybór: "))
 
     print("Wprowadz parametry sygnału")
-    A = float(input("A: "))
-    f = int(input("Częstotliwość próbkowania: "))
-    s = int(input("Podaj liczbe próbek: "))
+    f = int(input("Częstotliwość próbkowania f: "))
+    s = int(input("Liczba próbek n: "))
+    A = float(input("Amplituda sygnału A: "))
     t1, d, T, kw, ts, ns, p = 0, 0, 0, 0, 0, 0, 0
     signal = None
 
     if signal_type != 10:
-        t1 = float(input("t1: "))
-        d = float(input("d: "))
+        t1 = float(input("Czas początkowy t1: "))
+        d = float(input("Czas trwania sygnału d: "))
         signal = getattr(Signal, f"S{signal_type}")(A, t1, d, 0, f)
     if signal_type > 2 and signal_type not in range(9, 12):
-        T = float(input("T: "))
+        T = float(input("Okres podstawowy T: "))
         signal = getattr(Signal, f"S{signal_type}")(A, t1, d, T, f)
     if signal_type in range(6, 9):
-        kw = float(input("kw: "))
+        kw = float(input("Współczynnik kw: "))
         signal = getattr(Signal, f"S{signal_type}")(A, t1, d, T, f, kw)
     if signal_type == 9:
-        ts = float(input("ts: "))
+        ts = float(input("Czas skoku ts: "))
         signal = getattr(Signal, f"S{signal_type}")(A, t1, d, 0, f, ts)
     if signal_type == 10:
-        ns = float(input("ns: "))
+        ns = float(input("Numer próbki skoku ns: "))
         signal = getattr(Signal, f"S{signal_type}")(A, 0, 0, 0, f, ns)
     if signal_type == 11:
-        p = float(input("p: "))
+        p = float(input("Prawdopodobieństwo p: "))
         signal = getattr(Signal, f"S{signal_type}")(A, t1, d, 0, f, p)
 
     samples = s
