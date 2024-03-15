@@ -8,16 +8,20 @@ import Signal
 root = Tk()
 root.title("CPS - Projekt 1")
 root.geometry("1000x800")
-main_frame = ttk.Frame(root, padding=10)
-main_frame.grid()
-ttk.Button(main_frame, text="Quit", command=root.destroy).grid(column=1, row=3)
+notebook = ttk.Notebook(root, padding=10)
+notebook.pack(fill='both', expand=True)
 
-param_frame = ttk.Frame(main_frame, padding=10)
+page1 = ttk.Frame(notebook, padding=10)
+notebook.add(page1, text="Generowanie sygnału")
+
+ttk.Button(page1, text="Quit", command=root.destroy).grid(column=1, row=3)
+
+param_frame = ttk.Frame(page1, padding=10)
 param_frame.grid(column=0, row=2, columnspan=2)
 
 # SIGNAL INFO FRAME
 
-signal_info_frame = ttk.Frame(main_frame, padding=10)
+signal_info_frame = ttk.Frame(page1, padding=10)
 signal_info_frame.grid(column=4, row=0, columnspan=2, rowspan=4)
 
 avg_label = ttk.Label(signal_info_frame, text="Wartość średnia sygnału: ")
@@ -48,7 +52,7 @@ effective_label_value.grid(column=1, row=4)
 # SIGNAL INFO FRAME END
 
 
-ttk.Label(main_frame, text="Wybierz sygnał:").grid(column=0, row=1)
+ttk.Label(page1, text="Wybierz sygnał:").grid(column=0, row=1)
 signal_map = {
     "Szum o rozkładzie jednostajnym": Signal.S1,
     "Szum gaussowski": Signal.S2,
@@ -64,9 +68,12 @@ signal_map = {
 }
 signals = list(signal_map.keys())
 selected_signal = StringVar()
-dropdown_signal = ttk.OptionMenu(main_frame, selected_signal, *signals)
+dropdown_signal = ttk.OptionMenu(page1, selected_signal, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=1, row=1)
+
+new_page = ttk.Frame(notebook, padding=10)
+notebook.add(new_page, text="Operacje na sygnałach")
 
 
 def only_numbers(char: chr):
@@ -189,7 +196,7 @@ def plot_signal(signal: Signal, samples):
 
 def show_plot(signal: Signal, samples):
     fig = plot_signal(signal, samples)
-    canvas = FigureCanvasTkAgg(fig, master=main_frame)
+    canvas = FigureCanvasTkAgg(fig, master=page1)
     canvas.draw()
     canvas.get_tk_widget().grid(column=0, row=4, columnspan=4)
 
@@ -211,13 +218,16 @@ def show_signal_info(signal: Signal, samples):
         variance_label_value.config(text=str(round(signal.continuous_variance(signal), 3)))
         effective_label_value.config(text=str(round(signal.continuous_effective_value(signal), 3)))
 
+
 def generate_btn():
     samples = int(f_entry.get()) * int(d_entry.get())
     signal = create_signal()
     show_signal_info(signal, samples)
     show_plot(signal, samples)
 
-ttk.Button(main_frame, text="Generate", command=generate_btn).grid(column=0, row=3)
+
+ttk.Button(page1, text="Generate", command=generate_btn).grid(column=0, row=3)
+
 
 show_params()
 selected_signal.trace("w", show_params)
