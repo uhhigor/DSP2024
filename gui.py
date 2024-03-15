@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import Signal
 
 root = Tk()
-root.title("Sygnały")
+root.title("CPS - Projekt 1")
 main_frame = ttk.Frame(root, padding=10)
 main_frame.grid()
 ttk.Button(main_frame, text="Quit", command=root.destroy).grid(column=1, row=3)
@@ -39,9 +39,6 @@ def only_numbers(char: chr):
 
 f_label = ttk.Label(param_frame, text="Częstotliwość próbkowania f: ")
 f_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-s_label = ttk.Label(param_frame, text="Liczba próbek n: ")
-s_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
 
 A_label = ttk.Label(param_frame, text="Amplituda sygnału A: ")
 A_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
@@ -79,8 +76,6 @@ def show_params(*args):
         widget.grid_forget()
     f_label.grid(column=0, row=0)
     f_entry.grid(column=1, row=0)
-    s_label.grid(column=0, row=1)
-    s_entry.grid(column=1, row=1)
     A_label.grid(column=0, row=2)
     A_entry.grid(column=1, row=2)
     t1_label.grid(column=0, row=3)
@@ -158,7 +153,7 @@ def plot_signal(signal: Signal, samples):
 
 def show_plot():
     signal = create_signal()
-    samples = int(s_entry.get())
+    samples = int(f_entry.get())*int(d_entry.get())
     fig = plot_signal(signal, samples)
     canvas = FigureCanvasTkAgg(fig, master=main_frame)
     canvas.draw()
