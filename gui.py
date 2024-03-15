@@ -7,12 +7,46 @@ import Signal
 
 root = Tk()
 root.title("CPS - Projekt 1")
+root.geometry("1000x800")
 main_frame = ttk.Frame(root, padding=10)
 main_frame.grid()
 ttk.Button(main_frame, text="Quit", command=root.destroy).grid(column=1, row=3)
 
 param_frame = ttk.Frame(main_frame, padding=10)
 param_frame.grid(column=0, row=2, columnspan=2)
+
+# SIGNAL INFO FRAME
+
+signal_info_frame = ttk.Frame(main_frame, padding=10)
+signal_info_frame.grid(column=4, row=0, columnspan=2, rowspan=4)
+
+avg_label = ttk.Label(signal_info_frame, text="Wartość średnia sygnału: ")
+avg_label.grid(column=0, row=0)
+avg_label_value = ttk.Label(signal_info_frame, text="")
+avg_label_value.grid(column=1, row=0)
+
+avg_abs_label = ttk.Label(signal_info_frame, text="Wartość średnia bezwzględna sygnału: ")
+avg_abs_label.grid(column=0, row=1)
+avg_abs_label_value = ttk.Label(signal_info_frame, text="")
+avg_abs_label_value.grid(column=1, row=1)
+
+avg_power_label = ttk.Label(signal_info_frame, text="Moc średnia sygnału: ")
+avg_power_label.grid(column=0, row=2)
+avg_power_label_value = ttk.Label(signal_info_frame, text="")
+avg_power_label_value.grid(column=1, row=2)
+
+variance_label = ttk.Label(signal_info_frame, text="Wariancja sygnału: ")
+variance_label.grid(column=0, row=3)
+variance_label_value = ttk.Label(signal_info_frame, text="")
+variance_label_value.grid(column=1, row=3)
+
+effective_label = ttk.Label(signal_info_frame, text="Wartość skuteczna sygnału: ")
+effective_label.grid(column=0, row=4)
+effective_label_value = ttk.Label(signal_info_frame, text="")
+effective_label_value.grid(column=1, row=4)
+
+# SIGNAL INFO FRAME END
+
 
 ttk.Label(main_frame, text="Wybierz sygnał:").grid(column=0, row=1)
 signal_map = {
@@ -34,8 +68,10 @@ dropdown_signal = ttk.OptionMenu(main_frame, selected_signal, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=1, row=1)
 
+
 def only_numbers(char: chr):
     return char.isdigit() or char == "."
+
 
 f_label = ttk.Label(param_frame, text="Częstotliwość próbkowania f: ")
 f_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
@@ -151,16 +187,37 @@ def plot_signal(signal: Signal, samples):
     return fig
 
 
-def show_plot():
-    signal = create_signal()
-    samples = int(f_entry.get())*int(d_entry.get())
+def show_plot(signal: Signal, samples):
     fig = plot_signal(signal, samples)
     canvas = FigureCanvasTkAgg(fig, master=main_frame)
     canvas.draw()
     canvas.get_tk_widget().grid(column=0, row=4, columnspan=4)
 
 
-ttk.Button(main_frame, text="Generate", command=show_plot).grid(column=0, row=3)
+def show_signal_info(signal: Signal, samples):
+
+    if signal is None:
+        return
+    if signal is Signal.S10 or signal is Signal.S11:
+        avg_label_value.config(text=str(round(signal.discrete_average_value(signal, samples), 3)))
+        avg_abs_label_value.config(text=str(round(signal.discrete_average_value_absolute(signal, samples), 3)))
+        avg_power_label_value.config(text=str(round(signal.discrete_average_power(signal, samples), 3)))
+        variance_label_value.config(text=str(round(signal.discrete_variance(signal, samples), 3)))
+        effective_label_value.config(text=str(round(signal.discrete_effective_value(signal, samples), 3)))
+    else:
+        avg_label_value.config(text=str(round(signal.continuous_average_value(signal), 3)))
+        avg_abs_label_value.config(text=str(round(signal.continuous_average_value_absolute(signal), 3)))
+        avg_power_label_value.config(text=str(round(signal.continuous_average_power(signal), 3)))
+        variance_label_value.config(text=str(round(signal.continuous_variance(signal), 3)))
+        effective_label_value.config(text=str(round(signal.continuous_effective_value(signal), 3)))
+
+def generate_btn():
+    samples = int(f_entry.get()) * int(d_entry.get())
+    signal = create_signal()
+    show_signal_info(signal, samples)
+    show_plot(signal, samples)
+
+ttk.Button(main_frame, text="Generate", command=generate_btn).grid(column=0, row=3)
 
 show_params()
 selected_signal.trace("w", show_params)

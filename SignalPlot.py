@@ -58,7 +58,7 @@ def signal_parameters(signal: (), signal_type: int, samples: int):
     if signal_type in range(1, 10):
         print("Obliczone wartości sygnału ciągłego:")
         print(f"Wartość średnia sygnału: {signal.continuous_average_value(signal)}")
-        print(f"Wartość średnia bezwzględnae: {signal.continuous_average_value_absolute(signal)}")
+        print(f"Wartość średnia bezwzględna: {signal.continuous_average_value_absolute(signal)}")
         print(f"Moc średnia sygnału: {signal.continuous_average_power(signal)}")
         print(f"Wariancja sygnału: {signal.continuous_variance(signal)}")
         print(f"Wartość skuteczna: {signal.continuous_effective_value(signal)}")
