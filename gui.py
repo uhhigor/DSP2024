@@ -55,6 +55,7 @@ effective_label_value.grid(column=1, row=4)
 
 ttk.Label(page1, text="Wybierz sygnał:").grid(column=0, row=1)
 signal_map = {
+    "None": None,
     "Szum o rozkładzie jednostajnym": Signal.S1,
     "Szum gaussowski": Signal.S2,
     "Sygnał sinusoidalny": Signal.S3,
@@ -72,6 +73,7 @@ selected_signal = StringVar()
 dropdown_signal = ttk.OptionMenu(page1, selected_signal, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=1, row=1)
+selected_signal.set("Szum o rozkładzie jednostajnym")
 
 new_page = ttk.Frame(notebook, padding=10)
 notebook.add(new_page, text="Operacje na sygnałach")
@@ -81,6 +83,7 @@ selected_signal1 = StringVar()
 dropdown_signal = ttk.OptionMenu(new_page, selected_signal1, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=1, row=0)
+selected_signal1.set("Szum o rozkładzie jednostajnym")
 
 param_frame1 = ttk.Frame(new_page, padding=10)
 param_frame1.grid(column=0, row=2, columnspan=2)
@@ -89,141 +92,16 @@ selected_signal2 = StringVar()
 dropdown_signal = ttk.OptionMenu(new_page, selected_signal2, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=3, row=0)
+selected_signal2.set("Szum o rozkładzie jednostajnym")
 
 ttk.Label(new_page, text="Wybierz operację:").grid(column=4, row=0)
-operations = ["Dodawanie", "Odejmowanie", "Mnożenie", "Dzielenie"]
+operations = ["None", "+", "-", "*", "/"]
 selected_operation = StringVar()
 dropdown_operation = ttk.OptionMenu(new_page, selected_operation, *operations)
-dropdown_operation.config(width=30)
 dropdown_operation.grid(column=5, row=0)
+selected_operation.set("+")
 
 
-def only_numbers(char: chr):
-    return char.isdigit() or char == "."
-
-
-f_label = ttk.Label(param_frame, text="Częstotliwość próbkowania f: ")
-f_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-A_label = ttk.Label(param_frame, text="Amplituda sygnału A: ")
-A_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-t1_label = ttk.Label(param_frame, text="Czas początkowy t1: ")
-t1_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-d_label = ttk.Label(param_frame, text="Czas trwania sygnału d: ")
-d_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-T_label = ttk.Label(param_frame, text="Okres podstawowy T: ")
-T_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-kw_label = ttk.Label(param_frame, text="Współczynnik kw: ")
-kw_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-ts_label = ttk.Label(param_frame, text="Czas skoku ts: ")
-ts_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-ns_label = ttk.Label(param_frame, text="Numer próbki skoku ns: ")
-ns_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-p_label = ttk.Label(param_frame, text="Prawdopodobieństwo p: ")
-p_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-n1_label = ttk.Label(param_frame, text="Numer pierwszej próbki: ")
-n1_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-h_label = ttk.Label(param_frame, text="Liczba przedziałów histogramu: ")
-h_entry = ttk.Entry(param_frame, validate="key", validatecommand=(root.register(only_numbers), "%S"))
-
-
-def show_params(*args):
-    for widget in param_frame.winfo_children():
-        widget.grid_forget()
-    f_label.grid(column=0, row=0)
-    f_entry.grid(column=1, row=0)
-    A_label.grid(column=0, row=2)
-    A_entry.grid(column=1, row=2)
-    t1_label.grid(column=0, row=3)
-    t1_entry.grid(column=1, row=3)
-    d_label.grid(column=0, row=4)
-    d_entry.grid(column=1, row=4)
-    T_label.grid(column=0, row=5)
-    T_entry.grid(column=1, row=5)
-
-    h_entry.grid(column=1, row=7)
-    h_label.grid(column=0, row=7)
-
-    if selected_signal.get() in ["Sygnał prostokątny", "Sygnał prostokątny symetryczny", "Sygnał trójkątny"]:
-        kw_label.grid(column=0, row=6)
-        kw_entry.grid(column=1, row=6)
-    elif selected_signal.get() == "Skok jednostkowy":
-        ts_label.grid(column=0, row=6)
-        ts_entry.grid(column=1, row=6)
-    elif selected_signal.get() == "Impuls jednostkowy":
-        ns_label.grid(column=0, row=6)
-        ns_entry.grid(column=1, row=6)
-    elif selected_signal.get() == "Szum impulsowy":
-        p_label.grid(column=0, row=6)
-        p_entry.grid(column=1, row=6)
-    param_frame.update_idletasks()
-
-
-def create_signal():
-    signal = signal_map.get(selected_signal.get())
-    if signal in [Signal.S1, Signal.S2]:
-        return signal(float(A_entry.get()), float(t1_entry.get()), float(d_entry.get()), float(T_entry.get()),
-                      int(f_entry.get()))
-    elif signal in [Signal.S3, Signal.S4, Signal.S5]:
-        return signal(float(A_entry.get()), float(t1_entry.get()), float(d_entry.get()), float(T_entry.get()),
-                      int(f_entry.get()))
-    elif signal in [Signal.S6, Signal.S7, Signal.S8]:
-        return signal(float(A_entry.get()), float(t1_entry.get()), float(d_entry.get()), float(T_entry.get()),
-                      int(f_entry.get()), float(kw_entry.get()))
-    elif signal == Signal.S9:
-        return signal(float(A_entry.get()), float(t1_entry.get()), float(d_entry.get()), float(T_entry.get()),
-                      int(f_entry.get()), float(ts_entry.get()))
-    elif signal == Signal.S10:
-        return signal(float(A_entry.get()), float(t1_entry.get()), float(d_entry.get()), float(T_entry.get()),
-                      int(f_entry.get()), float(ns_entry.get()))
-    elif signal == Signal.S11:
-        return signal(float(A_entry.get()), float(t1_entry.get()), float(d_entry.get()), float(T_entry.get()),
-                      int(f_entry.get()), float(p_entry.get()))
-    else:
-        return None
-
-
-def create_values(signal, samples):
-    t_values = []
-    y_values = []
-    for n in range(0, samples):
-        t_values.append(signal.t(n))
-        y_values.append(signal(n))
-    return t_values, y_values
-
-
-current = None
-def plot_signal(signal: Signal, samples):
-    t_values, y_values = create_values(signal, samples)
-    global current
-    current = {'t_values': t_values, 'y_values': y_values, 'samples': samples, 'signal': signal}
-    fig = plt.figure()
-    ax1 = fig.add_subplot(2, 1, 1)
-    ax2 = fig.add_subplot(2, 1, 2)
-
-    if signal is Signal.S10 or signal is Signal.S11:
-        ax1.scatter(t_values, y_values)
-    else:
-        ax1.plot(t_values, y_values)
-
-    ax2.hist(y_values, bins=int(h_entry.get()), edgecolor='black')
-    return fig
-
-
-def show_plot(signal: Signal, samples):
-    fig = plot_signal(signal, samples)
-    canvas = FigureCanvasTkAgg(fig, master=page1)
-    canvas.draw()
-    canvas.get_tk_widget().grid(column=0, row=4, columnspan=4)
 
 
 def show_signal_info(signal: Signal, samples):
@@ -243,17 +121,7 @@ def show_signal_info(signal: Signal, samples):
         effective_label_value.config(text=str(round(signal.continuous_effective_value(signal), 3)))
 
 
-def generate_btn():
-    samples = int(f_entry.get()) * int(d_entry.get())
-    signal = create_signal()
-    show_signal_info(signal, samples)
-    show_plot(signal, samples)
 
-
-def save_btn():
-    print(current)
-    if current is not None:
-        save_to_file(current['signal'], current['samples'], current['t_values'], current['y_values'], 'signal_data.bin')
 
 
 def save_to_file(signal, samples, t_values, y_values, filename):
@@ -295,10 +163,6 @@ def load_from_file(filename):
     canvas.get_tk_widget().grid(column=0, row=4, columnspan=4)
 
 
-ttk.Button(page1, text="Generate", command=generate_btn).grid(column=0, row=3)
-ttk.Button(page1, text="Save to file", command=save_btn).grid(column=1, row=3)
-ttk.Button(page1, text="Load from file", command=lambda: load_from_file('signal_data.bin')).grid(column=2, row=3)
+ttk.Button(page1, text="Load from file", command=lambda: load_from_file('gui/signal_data.bin')).grid(column=2, row=3)
 
-show_params()
-selected_signal.trace("w", show_params)
 root.mainloop()
