@@ -85,12 +85,10 @@ dropdown_signal.grid(column=1, row=0)
 param_frame1 = ttk.Frame(new_page, padding=10)
 param_frame1.grid(column=0, row=2, columnspan=2)
 
-
 selected_signal2 = StringVar()
 dropdown_signal = ttk.OptionMenu(new_page, selected_signal2, *signals)
 dropdown_signal.config(width=30)
 dropdown_signal.grid(column=3, row=0)
-
 
 ttk.Label(new_page, text="Wybierz operację:").grid(column=4, row=0)
 operations = ["Dodawanie", "Odejmowanie", "Mnożenie", "Dzielenie"]
@@ -203,9 +201,11 @@ def create_values(signal, samples):
     return t_values, y_values
 
 
+current = None
 def plot_signal(signal: Signal, samples):
     t_values, y_values = create_values(signal, samples)
-    save_to_file(signal, samples, t_values, y_values, 'signal_data.bin')
+    global current
+    current = {'t_values': t_values, 'y_values': y_values, 'samples': samples, 'signal': signal}
     fig = plt.figure()
     ax1 = fig.add_subplot(2, 1, 1)
     ax2 = fig.add_subplot(2, 1, 2)
@@ -227,7 +227,6 @@ def show_plot(signal: Signal, samples):
 
 
 def show_signal_info(signal: Signal, samples):
-
     if signal is None:
         return
     if signal is Signal.S10 or signal is Signal.S11:
@@ -251,6 +250,12 @@ def generate_btn():
     show_plot(signal, samples)
 
 
+def save_btn():
+    print(current)
+    if current is not None:
+        save_to_file(current['signal'], current['samples'], current['t_values'], current['y_values'], 'signal_data.bin')
+
+
 def save_to_file(signal, samples, t_values, y_values, filename):
     params = {
         'start_time': signal.t(0),
@@ -265,6 +270,7 @@ def save_to_file(signal, samples, t_values, y_values, filename):
         file.write(np.array([params['sampling_frequency']], dtype=np.float64).tobytes())
         file.write(np.array([params['num_samples']], dtype=np.int32).tobytes())
         file.write(y_array.tobytes())
+    print("Zapisano do pliku")
 
 
 def load_from_file(filename):
@@ -290,13 +296,9 @@ def load_from_file(filename):
 
 
 ttk.Button(page1, text="Generate", command=generate_btn).grid(column=0, row=3)
-ttk.Button(page1, text="Load from file", command=lambda: load_from_file('signal_data.bin')).grid(column=1, row=3)
-
+ttk.Button(page1, text="Save to file", command=save_btn).grid(column=1, row=3)
+ttk.Button(page1, text="Load from file", command=lambda: load_from_file('signal_data.bin')).grid(column=2, row=3)
 
 show_params()
 selected_signal.trace("w", show_params)
 root.mainloop()
-
-
-
-
