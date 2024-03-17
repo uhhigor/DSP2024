@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -74,6 +75,29 @@ dropdown_signal.grid(column=1, row=1)
 
 new_page = ttk.Frame(notebook, padding=10)
 notebook.add(new_page, text="Operacje na sygnałach")
+
+ttk.Label(new_page, text="Wybierz sygnał 1:").grid(column=0, row=0)
+selected_signal1 = StringVar()
+dropdown_signal = ttk.OptionMenu(new_page, selected_signal1, *signals)
+dropdown_signal.config(width=30)
+dropdown_signal.grid(column=1, row=0)
+
+param_frame1 = ttk.Frame(new_page, padding=10)
+param_frame1.grid(column=0, row=2, columnspan=2)
+
+
+selected_signal2 = StringVar()
+dropdown_signal = ttk.OptionMenu(new_page, selected_signal2, *signals)
+dropdown_signal.config(width=30)
+dropdown_signal.grid(column=3, row=0)
+
+
+ttk.Label(new_page, text="Wybierz operację:").grid(column=4, row=0)
+operations = ["Dodawanie", "Odejmowanie", "Mnożenie", "Dzielenie"]
+selected_operation = StringVar()
+dropdown_operation = ttk.OptionMenu(new_page, selected_operation, *operations)
+dropdown_operation.config(width=30)
+dropdown_operation.grid(column=5, row=0)
 
 
 def only_numbers(char: chr):
@@ -181,6 +205,7 @@ def create_values(signal, samples):
 
 def plot_signal(signal: Signal, samples):
     t_values, y_values = create_values(signal, samples)
+    save_to_file(signal, samples, t_values, y_values, 'signal_data.bin')
     fig = plt.figure()
     ax1 = fig.add_subplot(2, 1, 1)
     ax2 = fig.add_subplot(2, 1, 2)
@@ -226,9 +251,52 @@ def generate_btn():
     show_plot(signal, samples)
 
 
+def save_to_file(signal, samples, t_values, y_values, filename):
+    params = {
+        'start_time': signal.t(0),
+        'sampling_frequency': signal.f,
+        'num_samples': samples
+    }
+    y_array = np.array(y_values, dtype=np.float64)
+    print(y_array)
+
+    with open(filename, 'wb') as file:
+        file.write(np.array([params['start_time']], dtype=np.float64).tobytes())
+        file.write(np.array([params['sampling_frequency']], dtype=np.float64).tobytes())
+        file.write(np.array([params['num_samples']], dtype=np.int32).tobytes())
+        file.write(y_array.tobytes())
+
+
+def load_from_file(filename):
+    with open(filename, 'rb') as file:
+        start_time = np.frombuffer(file.read(8), dtype=np.float64)[0]
+        sampling_frequency = np.frombuffer(file.read(8), dtype=np.float64)[0]
+        num_samples = np.frombuffer(file.read(4), dtype=np.int32)[0]
+
+        y_values = np.frombuffer(file.read(), dtype=np.float64)
+
+    t_values = np.linspace(start_time, start_time + num_samples / sampling_frequency, num_samples, endpoint=False)
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(2, 1, 1)
+    ax2 = fig.add_subplot(2, 1, 2)
+
+    ax1.plot(t_values, y_values)
+    ax2.hist(y_values, 10, edgecolor='black')
+
+    canvas = FigureCanvasTkAgg(fig, master=page1)
+    canvas.draw()
+    canvas.get_tk_widget().grid(column=0, row=4, columnspan=4)
+
+
 ttk.Button(page1, text="Generate", command=generate_btn).grid(column=0, row=3)
+ttk.Button(page1, text="Load from file", command=lambda: load_from_file('signal_data.bin')).grid(column=1, row=3)
 
 
 show_params()
 selected_signal.trace("w", show_params)
 root.mainloop()
+
+
+
+
