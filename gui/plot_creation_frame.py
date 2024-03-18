@@ -185,7 +185,7 @@ class PlotCreationFrame:
         ax1 = fig.add_subplot(2, 1, 1)
         ax2 = fig.add_subplot(2, 1, 2)
 
-        if signal is Signal.S10 or signal is Signal.S11:
+        if isinstance(signal, Signal.S10) or isinstance(signal, Signal.S11):
             ax1.scatter(t_values, y_values)
         else:
             ax1.plot(t_values, y_values)
