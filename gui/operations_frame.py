@@ -20,7 +20,6 @@ class OperationsFrame:
         ttk.Button(self.frame, text="Wykonaj operację", command=self.execute_operation).grid(column=1, row=0)
 
     def init_op_dropdown(self):
-        ttk.Label(self.master, text="Wybierz operację:").grid(column=0, row=0)
         operations = ["None", "+", "-", "*", "/"]
         dropdown_operation = ttk.OptionMenu(self.frame, self.selected_operation, *operations)
         dropdown_operation.grid(column=5, row=0)
@@ -68,5 +67,5 @@ class OperationsFrame:
         ax2 = fig.add_subplot(2, 1, 2)
 
         ax1.plot(t_values, result)
-        ax2.hist(t_values, 10, edgecolor='black')
+        ax2.hist(result, 10, edgecolor='black')
         self.show_info(result, fig, "Wynik operacji")
