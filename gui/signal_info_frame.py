@@ -3,16 +3,17 @@ from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import Signal
+import SignalParameters
 
 
 class SignalInfoFrame:
-    def __init__(self, master, signal: Signal, samples, fig):
+    def __init__(self, master, y_values, fig):
         self.master = master
         self.frame = ttk.Frame(self.master, padding="10")
-        self.signal = signal
+        self.y_values = y_values
         self.fig = fig
         self.init_widgets()
-        self.show(signal, samples)
+        self.show(y_values)
 
     def init_widgets(self):
         self.avg_label = ttk.Label(self.frame, text="Wartość średnia sygnału: ")
@@ -36,20 +37,13 @@ class SignalInfoFrame:
         self.effective_label_value = ttk.Label(self.frame, text="")
         self.effective_label_value.grid(column=1, row=5)
 
-    def show(self, signal: Signal, samples):
-        if signal is not None:
-            if signal is Signal.S10 or signal is Signal.S11:
-                self.avg_label_value.config(text=str(round(signal.discrete_average_value(signal, samples), 3)))
-                self.avg_abs_label_value.config(text=str(round(signal.discrete_average_value_absolute(signal, samples), 3)))
-                self.avg_power_label_value.config(text=str(round(signal.discrete_average_power(signal, samples), 3)))
-                self.variance_label_value.config(text=str(round(signal.discrete_variance(signal, samples), 3)))
-                self.effective_label_value.config(text=str(round(signal.discrete_effective_value(signal, samples), 3)))
-            else:
-                self.avg_label_value.config(text=str(round(signal.continuous_average_value(signal), 3)))
-                self.avg_abs_label_value.config(text=str(round(signal.continuous_average_value_absolute(signal), 3)))
-                self.avg_power_label_value.config(text=str(round(signal.continuous_average_power(signal), 3)))
-                self.variance_label_value.config(text=str(round(signal.continuous_variance(signal), 3)))
-                self.effective_label_value.config(text=str(round(signal.continuous_effective_value(signal), 3)))
+    def show(self, y_values):
+        self.avg_label_value.config(text=str(round(SignalParameters.average_value(y_values), 3)))
+        self.avg_abs_label_value.config(text=str(round(SignalParameters.average_value_absolute(y_values), 3)))
+        self.avg_power_label_value.config(text=str(round(SignalParameters.average_power(y_values), 3)))
+        self.variance_label_value.config(text=str(round(SignalParameters.continuous_variance(y_values), 3)))
+        self.effective_label_value.config(text=str(round(SignalParameters.continuous_effective_value(y_values), 3)))
+
         canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
         canvas.draw()
         canvas.get_tk_widget().grid(column=0, row=6, columnspan=2)

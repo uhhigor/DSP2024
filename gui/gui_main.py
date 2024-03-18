@@ -5,7 +5,7 @@ from operations_frame import OperationsFrame
 from signal_info_frame import SignalInfoFrame
 
 root = Tk()
-root.title("CPS - Projekt 13456")
+root.title("CPS - Projekt")
 root.geometry("1000x800")
 notebook = ttk.Notebook(root, padding=10)
 notebook.pack(fill='both', expand=True)

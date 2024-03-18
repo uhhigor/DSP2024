@@ -22,6 +22,7 @@ signal_map = {
 }
 signals = list(signal_map.keys())
 
+
 def only_numbers(char: chr):
     return char.isdigit() or char == "."
 
@@ -199,7 +200,7 @@ class PlotCreationFrame:
         signal = self.create_signal()
         title = f"{self.selected_signal.get()}, n: {samples}, {self.f_entry.get()} Hz"
         fig = self.plot_signal(signal, samples)
-        self.show_info(signal, samples, fig, title)
+        self.show_info(fig, title)
 
     def save_to_file(self, signal, samples, t_values, y_values, filename):
         params = {
@@ -235,13 +236,13 @@ class PlotCreationFrame:
 
         ax1.plot(t_values, y_values)
         ax2.hist(y_values, 10, edgecolor='black')
-        self.show_info(None, num_samples, fig, "Wczytany sygnał")
+        self.show_info(fig, "Wczytany sygnał")
 
-    def show_info(self, signal, samples, fig, title):
+    def show_info(self, fig, title):
         new_window = Toplevel(self.master)
         self.windows.append(new_window)
         new_window.title(title)
-        new_frame = SignalInfoFrame(new_window, signal, samples, fig)
+        new_frame = SignalInfoFrame(new_window, self.current['y_values'], fig)
         new_frame.frame.grid(column=0, row=0)
 
     def close_other(self):
