@@ -28,13 +28,14 @@ def only_numbers(char: chr):
 
 
 class PlotCreationFrame:
-    def __init__(self, master):
+    def __init__(self, master, title):
         self.windows = []
         self.master = master
         self.frame = ttk.Frame(self.master, padding="10")
         self.params_frame = ttk.Frame(self.frame)
-        self.params_frame.grid(column=0, row=1, columnspan=2)
+        self.params_frame.grid(column=0, row=2, columnspan=2, rowspan=6)
         self.current = None
+        self.title = title
 
         # Choose signal
         self.init_choose_signal()
@@ -43,27 +44,33 @@ class PlotCreationFrame:
         self.init_signal_parameters()
 
         self.selected_signal.trace("w", self.show_params)
+
+        ttk.Label(self.frame, text=title, font=("Helvetica", 32)).grid(column=0, row=0)
         # Generate button
-        ttk.Button(self.frame, text="Generate", command=self.generate_btn).grid(column=0, row=2)
+        ttk.Button(self.frame, text="Generate", command=self.generate_btn).grid(column=0, row=8)
 
         # Save to file button
         ttk.Button(self.frame, text="Save to file",
                    command=lambda: self.save_to_file(self.current['signal'], self.current['samples'],
                                                      self.current['t_values'], self.current['y_values'],
-                                                     "signal_data.bin")).grid(column=1, row=2)
+                                                     self.file_name_entry.get()+'.bin')).grid(column=2, row=4)
 
         # Load from file button
-        ttk.Button(self.frame, text="Load from file", command=lambda: self.load_from_file('signal_data.bin')).grid(
-            column=2, row=2)
+        ttk.Button(self.frame, text="Load from file", command=self.load_from_file).grid(
+            column=2, row=5)
+        ttk.Label(self.frame, text="Nazwa pliku: ").grid(column=2, row=6)
+        self.file_name_entry = ttk.Entry(self.frame)
+        self.file_name_entry.grid(column=3, row=6)
+        self.file_name_entry.insert(0, "signal")
         # Show params
         self.show_params()
 
     def init_choose_signal(self):
-        ttk.Label(self.frame, text="Wybierz sygnał:").grid(column=0, row=0)
+        ttk.Label(self.frame, text="Wybierz sygnał:").grid(column=0, row=1)
         self.selected_signal = StringVar()
         dropdown_signal = ttk.OptionMenu(self.frame, self.selected_signal, *signals)
         dropdown_signal.config(width=30)
-        dropdown_signal.grid(column=1, row=0)
+        dropdown_signal.grid(column=1, row=1)
         self.selected_signal.set("Szum o rozkładzie jednostajnym")
 
     def init_signal_parameters(self):
@@ -110,6 +117,7 @@ class PlotCreationFrame:
         self.h_label = ttk.Label(self.params_frame, text="Liczba przedziałów histogramu: ")
         self.h_entry = ttk.Entry(self.params_frame, validate="key",
                                  validatecommand=(self.master.register(only_numbers), "%S"))
+
 
     def show_params(self, *args):
         for widget in self.params_frame.winfo_children():
@@ -200,7 +208,7 @@ class PlotCreationFrame:
         signal = self.create_signal()
         title = f"{self.selected_signal.get()}, n: {samples}, {self.f_entry.get()} Hz"
         fig = self.plot_signal(signal, samples)
-        self.show_info(fig, title)
+        self.show_info(fig, self.f_entry.get(), self.t1_entry.get(), samples)
 
     def save_to_file(self, signal, samples, t_values, y_values, filename):
         params = {
@@ -218,8 +226,9 @@ class PlotCreationFrame:
             file.write(y_array.tobytes())
         print("Zapisano do pliku")
 
-    def load_from_file(self, filename):
+    def load_from_file(self):
         self.close_other()
+        filename = self.file_name_entry.get()+'.bin'
         with open(filename, 'rb') as file:
             start_time = np.frombuffer(file.read(8), dtype=np.float64)[0]
             sampling_frequency = np.frombuffer(file.read(8), dtype=np.float64)[0]
@@ -228,7 +237,7 @@ class PlotCreationFrame:
             y_values = np.frombuffer(file.read(), dtype=np.float64)
 
         t_values = np.linspace(start_time, start_time + num_samples / sampling_frequency, num_samples, endpoint=False)
-        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': num_samples, 'signal': None}
+        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': num_samples, 'start_time': start_time, 'frequency': sampling_frequency, 'signal': None}
 
         fig = plt.figure()
         ax1 = fig.add_subplot(2, 1, 1)
@@ -236,13 +245,13 @@ class PlotCreationFrame:
 
         ax1.plot(t_values, y_values)
         ax2.hist(y_values, 10, edgecolor='black')
-        self.show_info(fig, "Wczytany sygnał")
+        self.show_info(fig, start_time, sampling_frequency, num_samples)
 
-    def show_info(self, fig, title):
+    def show_info(self, fig, f, t1, samples):
         new_window = Toplevel(self.master)
         self.windows.append(new_window)
-        new_window.title(title)
-        new_frame = SignalInfoFrame(new_window, self.current['y_values'], fig)
+        new_window.title(self.title)
+        new_frame = SignalInfoFrame(new_window, self.current['y_values'], fig, f, t1, samples)
         new_frame.frame.grid(column=0, row=0)
 
     def close_other(self):

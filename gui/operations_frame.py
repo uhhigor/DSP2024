@@ -25,11 +25,11 @@ class OperationsFrame:
         dropdown_operation.grid(column=5, row=0)
         self.selected_operation.set("+")
 
-    def show_info(self, y_values, fig, title):
+    def show_info(self, y_values, fig, f, t1, samples, title):
         new_window = Toplevel(self.master)
         self.windows.append(new_window)
         new_window.title(title)
-        new_frame = SignalInfoFrame(new_window, y_values, fig)
+        new_frame = SignalInfoFrame(new_window, y_values, fig, f, t1, samples)
         new_frame.frame.grid(column=0, row=0)
 
     def close_other(self):
@@ -68,4 +68,4 @@ class OperationsFrame:
 
         ax1.plot(t_values, result)
         ax2.hist(result, 10, edgecolor='black')
-        self.show_info(result, fig, "Wynik operacji")
+        self.show_info(result, fig, self.function_frame1.current['frequency'], self.function_frame1.current['start_time'], self.function_frame1.current['samples'], "Wynik operacji")
