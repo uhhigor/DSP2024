@@ -1,2 +1,7 @@
 .idea
 __pycache__/
+.DS_Store
+gui/signal_data.bin
+/wd
+gui/signal_data.bin
+gui/signal_data.bin
