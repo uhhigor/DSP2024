@@ -51,8 +51,9 @@ class PlotCreationFrame:
 
         # Save to file button
         ttk.Button(self.frame, text="Save to file",
-                   command=lambda: self.save_to_file(self.current['signal'], self.current['samples'], self.current['y_values'],
-                                                     self.file_name_entry.get()+'.bin')).grid(column=2, row=4)
+                   command=lambda: self.save_to_file(self.current['signal'], self.current['samples'],
+                                                     self.current['y_values'],
+                                                     self.file_name_entry.get() + '.bin')).grid(column=2, row=4)
 
         # Load from file button
         ttk.Button(self.frame, text="Load from file", command=self.load_from_file).grid(
@@ -113,7 +114,6 @@ class PlotCreationFrame:
         self.h_entry = ttk.Entry(self.params_frame, validate="key",
                                  validatecommand=(self.master.register(only_numbers), "%S"))
 
-
     def show_params(self, *args):
         for widget in self.params_frame.winfo_children():
             widget.grid_forget()
@@ -167,11 +167,16 @@ class PlotCreationFrame:
             return None
 
     def plot_signal(self, signal: analog_signal.Signal):
-        if isinstance(signal, analog_signal.S10) or isinstance(signal, analog_signal.S11):
+        if isinstance(signal, analog_signal.DiscreteSignal):
             samples = int((int(self.d_entry.get()) - int(self.t1_entry.get())) * int(self.f_entry.get()))
             t_values, y_values = signal_sampling.discrete_sampling(signal, samples)
+        elif isinstance(signal, analog_signal.ContinousSignal):
+            t_values, y_values = signal_sampling.uniform_sampling(signal, int(self.f_entry.get()),
+                                                                  float(self.t1_entry.get()),
+                                                                  float(self.t1_entry.get() + self.d_entry.get()))
         else:
-            t_values, y_values = signal_sampling.uniform_sampling(signal, int(self.f_entry.get()), float(self.t1_entry.get()), float(self.t1_entry.get() + self.d_entry.get()))
+            raise ValueError("Niepoprawny sygnał")
+
         samples_num = len(t_values)
         self.current = {'t_values': t_values, 'y_values': y_values, 'samples': samples_num, 'signal': signal}
         fig = plt.figure()
@@ -211,7 +216,7 @@ class PlotCreationFrame:
 
     def load_from_file(self):
         self.close_other()
-        filename = self.file_name_entry.get()+'.bin'
+        filename = self.file_name_entry.get() + '.bin'
         with open(filename, 'rb') as file:
             start_time = np.frombuffer(file.read(8), dtype=np.float64)[0]
             sampling_frequency = np.frombuffer(file.read(8), dtype=np.float64)[0]
@@ -220,7 +225,8 @@ class PlotCreationFrame:
             y_values = np.frombuffer(file.read(), dtype=np.float64)
 
         t_values = np.linspace(start_time, start_time + num_samples / sampling_frequency, num_samples, endpoint=False)
-        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': num_samples, 'start_time': start_time, 'frequency': sampling_frequency, 'signal': None}
+        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': num_samples, 'start_time': start_time,
+                        'frequency': sampling_frequency, 'signal': None}
 
         fig = plt.figure()
         ax1 = fig.add_subplot(2, 1, 1)

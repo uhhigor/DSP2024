@@ -3,7 +3,16 @@ import random
 
 
 class Signal:
+    def __init__(self):
+        pass
+
+    def __call__(self, t):
+        pass
+
+
+class ContinousSignal(Signal):
     def __init__(self, amplitude: float, t1: float, duration: float, period: float):
+        super().__init__()
         self.amplitude = amplitude  # amplituda - wartość maksymalna
         self.t1 = t1  # czas początkowy, poniżej którego sygnał jest równy 0
         self.duration = duration  # czas trwania sygnału
@@ -14,7 +23,16 @@ class Signal:
         pass
 
 
-class S1(Signal):
+class DiscreteSignal(Signal):
+    def __init__(self, amplitude: float):
+        super().__init__()
+        self.amplitude = amplitude
+
+    def __call__(self, n) -> float:  # n - numer próbki
+        pass
+
+
+class S1(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period):
         super().__init__(amplitude, t1, duration, period)
 
@@ -27,7 +45,7 @@ class S1(Signal):
             return random.uniform(-self.amplitude, self.amplitude)
 
 
-class S2(Signal):
+class S2(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period):
         super().__init__(amplitude, t1, duration, period)
 
@@ -44,7 +62,7 @@ class S2(Signal):
             return r + self.noise(t)
 
 
-class S3(Signal):
+class S3(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period):
         super().__init__(amplitude, t1, duration, period)
 
@@ -57,7 +75,7 @@ class S3(Signal):
             return self.amplitude * math.sin(2.0 * math.pi * (t - self.t1) / self.period)
 
 
-class S4(Signal):
+class S4(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period):
         super().__init__(amplitude, t1, duration, period)
 
@@ -71,7 +89,7 @@ class S4(Signal):
                 math.sin(2.0 * math.pi * (t - self.t1) / self.period)))
 
 
-class S5(Signal):
+class S5(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period):
         super().__init__(amplitude, t1, duration, period)
 
@@ -85,7 +103,7 @@ class S5(Signal):
 
 
 # kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
-class S6(Signal):
+class S6(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period, kw=0.5):
         super().__init__(amplitude, t1, duration, period)
         self.kw = kw
@@ -103,7 +121,7 @@ class S6(Signal):
 
 
 # kw - stosunek czasu trwania wartości maksymalnej do okresu podstawowego (0 < kw < 1)
-class S7(Signal):
+class S7(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period, kw=0.5):
         super().__init__(amplitude, t1, duration, period)
         self.kw = kw
@@ -121,7 +139,7 @@ class S7(Signal):
 
 
 # kw - stosunek czasu trwania zbocza narastającego do okresu podstawowego (0 < kw < 1)
-class S8(Signal):
+class S8(ContinousSignal):
     def __init__(self, amplitude, t1, duration, period, kw=0.5):
         super().__init__(amplitude, t1, duration, period)
         self.kw = kw
@@ -139,7 +157,7 @@ class S8(Signal):
                 return self.amplitude * (1 - k)
 
 
-class S9(Signal):
+class S9(ContinousSignal):
 
     def __init__(self, amplitude, t1, duration, period, ts):
         super().__init__(amplitude, t1, duration, period)
@@ -159,8 +177,9 @@ class S9(Signal):
                 return 0
 
 
-class S10:
+class S10(DiscreteSignal):
     def __init__(self, amplitude, ns):
+        super().__init__(amplitude)
         self.amplitude = amplitude
         self.ns = ns
 
@@ -171,8 +190,9 @@ class S10:
             return 0
 
 
-class S11:
+class S11(DiscreteSignal):
     def __init__(self, amplitude, p=0.5):
+        super().__init__(amplitude)
         self.amplitude = amplitude
         self.p = p
 
