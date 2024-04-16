@@ -15,36 +15,39 @@ class SignalInfoFrame:
         self.frequency = frequency
         self.start_time = start_time
         self.num_samples = num_samples
+
+        self.avg_label = ttk.Label(self.frame, text="Wartość średnia sygnału: ")
+        self.avg_label_value = ttk.Label(self.frame, text="")
+        self.avg_abs_label = ttk.Label(self.frame, text="Wartość średnia bezwzględna sygnału: ")
+        self.avg_abs_label_value = ttk.Label(self.frame, text="")
+        self.avg_power_label = ttk.Label(self.frame, text="Moc średnia sygnału: ")
+        self.avg_power_label_value = ttk.Label(self.frame, text="")
+        self.variance_label = ttk.Label(self.frame, text="Wariancja sygnału: ")
+        self.variance_label_value = ttk.Label(self.frame, text="")
+        self.effective_label = ttk.Label(self.frame, text="Wartość skuteczna sygnału: ")
+        self.effective_label_value = ttk.Label(self.frame, text="")
+
+        self.save_button = ttk.Button(self.frame, text="Zapisz do pliku", command=self.save_to_file)
+        self.file_name_label = ttk.Label(self.frame, text="Nazwa pliku: ")
+        self.file_name_entry = ttk.Entry(self.frame)
+
         self.init_widgets()
         self.show(y_values)
 
     def init_widgets(self):
-        self.avg_label = ttk.Label(self.frame, text="Wartość średnia sygnału: ")
         self.avg_label.grid(column=0, row=1)
-        self.avg_label_value = ttk.Label(self.frame, text="")
         self.avg_label_value.grid(column=1, row=1)
-        self.avg_abs_label = ttk.Label(self.frame, text="Wartość średnia bezwzględna sygnału: ")
         self.avg_abs_label.grid(column=0, row=2)
-        self.avg_abs_label_value = ttk.Label(self.frame, text="")
         self.avg_abs_label_value.grid(column=1, row=2)
-        self.avg_power_label = ttk.Label(self.frame, text="Moc średnia sygnału: ")
         self.avg_power_label.grid(column=0, row=3)
-        self.avg_power_label_value = ttk.Label(self.frame, text="")
         self.avg_power_label_value.grid(column=1, row=3)
-        self.variance_label = ttk.Label(self.frame, text="Wariancja sygnału: ")
         self.variance_label.grid(column=0, row=4)
-        self.variance_label_value = ttk.Label(self.frame, text="")
         self.variance_label_value.grid(column=1, row=4)
-        self.effective_label = ttk.Label(self.frame, text="Wartość skuteczna sygnału: ")
         self.effective_label.grid(column=0, row=5)
-        self.effective_label_value = ttk.Label(self.frame, text="")
         self.effective_label_value.grid(column=1, row=5)
 
-        self.save_button = ttk.Button(self.frame, text="Zapisz do pliku", command=self.save_to_file)
         self.save_button.grid(column=0, row=7)
-        self.file_name_label = ttk.Label(self.frame, text="Nazwa pliku: ")
         self.file_name_label.grid(column=0, row=8)
-        self.file_name_entry = ttk.Entry(self.frame)
         self.file_name_entry.grid(column=1, row=8)
         self.file_name_entry.insert(0, "signal")
 
