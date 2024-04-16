@@ -49,11 +49,11 @@ class SignalInfoFrame:
         self.file_name_entry.insert(0, "signal")
 
     def show(self, y_values):
-        self.avg_label_value.config(text=str(round(SignalParameters.average_value(y_values), 3)))
-        self.avg_abs_label_value.config(text=str(round(SignalParameters.average_value_absolute(y_values), 3)))
-        self.avg_power_label_value.config(text=str(round(SignalParameters.average_power(y_values), 3)))
-        self.variance_label_value.config(text=str(round(SignalParameters.continuous_variance(y_values), 3)))
-        self.effective_label_value.config(text=str(round(SignalParameters.continuous_effective_value(y_values), 3)))
+        self.avg_label_value.config(text=str(round(signal_parameters.average_value(y_values), 3)))
+        self.avg_abs_label_value.config(text=str(round(signal_parameters.average_value_absolute(y_values), 3)))
+        self.avg_power_label_value.config(text=str(round(signal_parameters.average_power(y_values), 3)))
+        self.variance_label_value.config(text=str(round(signal_parameters.continuous_variance(y_values), 3)))
+        self.effective_label_value.config(text=str(round(signal_parameters.continuous_effective_value(y_values), 3)))
 
         canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
         canvas.draw()
