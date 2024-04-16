@@ -3,8 +3,7 @@ from tkinter import ttk
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-import Signal
-import SignalParameters
+from api import signal_parameters
 
 
 class SignalInfoFrame:

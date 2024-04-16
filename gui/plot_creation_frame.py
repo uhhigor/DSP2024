@@ -3,22 +3,22 @@ from tkinter import ttk, StringVar, Toplevel
 import numpy as np
 from matplotlib import pyplot as plt
 
-import Signal
+from api import analog_signal, signal_sampling
 from signal_info_frame import SignalInfoFrame
 
 signal_map = {
     "None": None,
-    "Szum o rozkładzie jednostajnym": Signal.S1,
-    "Szum gaussowski": Signal.S2,
-    "Sygnał sinusoidalny": Signal.S3,
-    "Sygnał sinusoidalny wyprostowany jednopołówkowo": Signal.S4,
-    "Sygnał sinusoidalny wyprostowany dwupołówkowo": Signal.S5,
-    "Sygnał prostokątny": Signal.S6,
-    "Sygnał prostokątny symetryczny": Signal.S7,
-    "Sygnał trójkątny": Signal.S8,
-    "Skok jednostkowy": Signal.S9,
-    "Impuls jednostkowy": Signal.S10,
-    "Szum impulsowy": Signal.S11
+    "Szum o rozkładzie jednostajnym": analog_signal.S1,
+    "Szum gaussowski": analog_signal.S2,
+    "Sygnał sinusoidalny": analog_signal.S3,
+    "Sygnał sinusoidalny wyprostowany jednopołówkowo": analog_signal.S4,
+    "Sygnał sinusoidalny wyprostowany dwupołówkowo": analog_signal.S5,
+    "Sygnał prostokątny": analog_signal.S6,
+    "Sygnał prostokątny symetryczny": analog_signal.S7,
+    "Sygnał trójkątny": analog_signal.S8,
+    "Skok jednostkowy": analog_signal.S9,
+    "Impuls jednostkowy": analog_signal.S10,
+    "Szum impulsowy": analog_signal.S11
 }
 signals = list(signal_map.keys())
 
@@ -51,8 +51,7 @@ class PlotCreationFrame:
 
         # Save to file button
         ttk.Button(self.frame, text="Save to file",
-                   command=lambda: self.save_to_file(self.current['signal'], self.current['samples'],
-                                                     self.current['t_values'], self.current['y_values'],
+                   command=lambda: self.save_to_file(self.current['signal'], self.current['samples'], self.current['y_values'],
                                                      self.file_name_entry.get()+'.bin')).grid(column=2, row=4)
 
         # Load from file button
@@ -110,10 +109,6 @@ class PlotCreationFrame:
         self.p_entry = ttk.Entry(self.params_frame, validate="key",
                                  validatecommand=(self.master.register(only_numbers), "%S"))
 
-        self.n1_label = ttk.Label(self.params_frame, text="Numer pierwszej próbki: ")
-        self.n1_entry = ttk.Entry(self.params_frame, validate="key",
-                                  validatecommand=(self.master.register(only_numbers), "%S"))
-
         self.h_label = ttk.Label(self.params_frame, text="Liczba przedziałów histogramu: ")
         self.h_entry = ttk.Entry(self.params_frame, validate="key",
                                  validatecommand=(self.master.register(only_numbers), "%S"))
@@ -152,50 +147,39 @@ class PlotCreationFrame:
 
     def create_signal(self):
         signal = signal_map.get(self.selected_signal.get())
-        if signal in [Signal.S1, Signal.S2]:
+        if signal in [analog_signal.S1, analog_signal.S2]:
             return signal(float(self.A_entry.get()), float(self.t1_entry.get()), float(self.d_entry.get()),
-                          float(self.T_entry.get()),
-                          int(self.f_entry.get()))
-        elif signal in [Signal.S3, Signal.S4, Signal.S5]:
+                          float(self.T_entry.get()))
+        elif signal in [analog_signal.S3, analog_signal.S4, analog_signal.S5]:
             return signal(float(self.A_entry.get()), float(self.t1_entry.get()), float(self.d_entry.get()),
-                          float(self.T_entry.get()),
-                          int(self.f_entry.get()))
-        elif signal in [Signal.S6, Signal.S7, Signal.S8]:
+                          float(self.T_entry.get()))
+        elif signal in [analog_signal.S6, analog_signal.S7, analog_signal.S8]:
             return signal(float(self.A_entry.get()), float(self.t1_entry.get()), float(self.d_entry.get()),
-                          float(self.T_entry.get()),
-                          int(self.f_entry.get()), float(self.kw_entry.get()))
-        elif signal == Signal.S9:
+                          float(self.T_entry.get()), float(self.kw_entry.get()))
+        elif signal == analog_signal.S9:
             return signal(float(self.A_entry.get()), float(self.t1_entry.get()), float(self.d_entry.get()),
-                          float(self.T_entry.get()),
-                          int(self.f_entry.get()), float(self.ts_entry.get()))
-        elif signal == Signal.S10:
-            return signal(float(self.A_entry.get()), float(self.t1_entry.get()), float(self.d_entry.get()),
-                          float(self.T_entry.get()),
-                          int(self.f_entry.get()), float(self.ns_entry.get()))
-        elif signal == Signal.S11:
-            return signal(float(self.A_entry.get()), float(self.t1_entry.get()), float(self.d_entry.get()),
-                          float(self.T_entry.get()),
-                          int(self.f_entry.get()), float(self.p_entry.get()))
+                          float(self.T_entry.get()), float(self.ts_entry.get()))
+        elif signal == analog_signal.S10:
+            return signal(float(self.A_entry.get()), float(self.ns_entry.get()))
+        elif signal == analog_signal.S11:
+            return signal(float(self.A_entry.get()), float(self.p_entry.get()))
         else:
             return None
 
-    def create_values(self, signal, samples):
-        t_values = []
-        y_values = []
-        for n in range(0, samples):
-            t_values.append(signal.t(n))
-            y_values.append(signal(n))
-        return t_values, y_values
-
-    def plot_signal(self, signal: Signal, samples):
-        t_values, y_values = self.create_values(signal, samples)
-        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': samples, 'signal': signal}
+    def plot_signal(self, signal: analog_signal.Signal):
+        if isinstance(signal, analog_signal.S10) or isinstance(signal, analog_signal.S11):
+            samples = int((int(self.d_entry.get()) - int(self.t1_entry.get())) * int(self.f_entry.get()))
+            t_values, y_values = signal_sampling.discrete_sampling(signal, samples)
+        else:
+            t_values, y_values = signal_sampling.uniform_sampling(signal, int(self.f_entry.get()), float(self.t1_entry.get()), float(self.t1_entry.get() + self.d_entry.get()))
+        samples_num = len(t_values)
+        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': samples_num, 'signal': signal}
         fig = plt.figure()
         ax1 = fig.add_subplot(2, 1, 1)
         ax2 = fig.add_subplot(2, 1, 2)
 
-        if isinstance(signal, Signal.S10) or isinstance(signal, Signal.S11):
-            ax1.scatter(t_values, y_values)
+        if isinstance(signal, analog_signal.S10) or isinstance(signal, analog_signal.S11):
+            ax1.scatter(t_values, y_values, s=1)
         else:
             ax1.plot(t_values, y_values)
 
@@ -206,11 +190,10 @@ class PlotCreationFrame:
         self.close_other()
         samples = int(self.f_entry.get()) * int(self.d_entry.get())
         signal = self.create_signal()
-        title = f"{self.selected_signal.get()}, n: {samples}, {self.f_entry.get()} Hz"
-        fig = self.plot_signal(signal, samples)
+        fig = self.plot_signal(signal)
         self.show_info(fig, self.f_entry.get(), self.t1_entry.get(), samples)
 
-    def save_to_file(self, signal, samples, t_values, y_values, filename):
+    def save_to_file(self, signal, samples, y_values, filename):
         params = {
             'start_time': signal.t(0),
             'sampling_frequency': signal.f,
