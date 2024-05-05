@@ -3,7 +3,7 @@ from tkinter import ttk, StringVar, Toplevel
 import numpy as np
 from matplotlib import pyplot as plt
 
-from api import analog_signal, signal_sampling
+from api import analog_signal, signal_conversion
 from signal_info_frame import SignalInfoFrame
 
 signal_map = {
@@ -170,7 +170,7 @@ class PlotCreationFrame:
         if isinstance(signal, analog_signal.DiscreteSignal):
             samples = int((int(self.d_entry.get()) - int(self.t1_entry.get())) * int(self.f_entry.get()))
             t_values, y_values = signal_sampling.discrete_sampling(signal, samples)
-        elif isinstance(signal, analog_signal.ContinousSignal):
+        elif isinstance(signal, analog_signal.ContinuousSignal):
             t_values, y_values = signal_sampling.uniform_sampling(signal, int(self.f_entry.get()),
                                                                   float(self.t1_entry.get()),
                                                                   float(self.t1_entry.get() + self.d_entry.get()))
