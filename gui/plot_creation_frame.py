@@ -3,7 +3,7 @@ from tkinter import ttk, StringVar, Toplevel
 import numpy as np
 from matplotlib import pyplot as plt
 
-from api import analog_signal, signal_conversion
+from api import analog_signal, signal_conversion, digital_signal
 from signal_info_frame import SignalInfoFrame
 
 signal_map = {
@@ -166,81 +166,64 @@ class PlotCreationFrame:
         else:
             return None
 
-    def plot_signal(self, signal: analog_signal.Signal):
-        if isinstance(signal, analog_signal.DiscreteSignal):
+    def plot_signal(self, signal: analog_signal.AnalogSignal):
+        if isinstance(signal, analog_signal.DiscreteAnalogSignal):
             samples = int((int(self.d_entry.get()) - int(self.t1_entry.get())) * int(self.f_entry.get()))
-            t_values, y_values = signal_sampling.discrete_sampling(signal, samples)
-        elif isinstance(signal, analog_signal.ContinuousSignal):
-            t_values, y_values = signal_sampling.uniform_sampling(signal, int(self.f_entry.get()),
-                                                                  float(self.t1_entry.get()),
-                                                                  float(self.t1_entry.get() + self.d_entry.get()))
+            sig = signal_conversion.discrete_sampling(signal, samples)
+        elif isinstance(signal, analog_signal.ContinuousAnalogSignal):
+            sig = signal_conversion.uniform_sampling(signal, int(self.f_entry.get()),
+                                                     float(self.t1_entry.get()),
+                                                     float(self.t1_entry.get() + self.d_entry.get()))
         else:
             raise ValueError("Niepoprawny sygnał")
 
-        samples_num = len(t_values)
-        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': samples_num, 'signal': signal}
         fig = plt.figure()
         ax1 = fig.add_subplot(2, 1, 1)
         ax2 = fig.add_subplot(2, 1, 2)
 
         if isinstance(signal, analog_signal.S10) or isinstance(signal, analog_signal.S11):
-            ax1.scatter(t_values, y_values, s=1)
+            ax1.scatter(sig.time, sig.samples, s=1)
         else:
-            ax1.plot(t_values, y_values)
+            ax1.plot(sig.time, sig.samples)
 
-        ax2.hist(y_values, bins=int(self.h_entry.get()), edgecolor='black')
+        ax2.hist(sig.samples, bins=int(self.h_entry.get()), edgecolor='black')
         return fig
 
     def generate_btn(self):
         self.close_other()
-        samples = int(self.f_entry.get()) * int(self.d_entry.get())
         signal = self.create_signal()
         fig = self.plot_signal(signal)
-        self.show_info(fig, self.f_entry.get(), self.t1_entry.get(), samples)
-
-    def save_to_file(self, signal, samples, y_values, filename):
-        params = {
-            'start_time': signal.t(0),
-            'sampling_frequency': signal.f,
-            'num_samples': samples
-        }
-        y_array = np.array(y_values, dtype=np.float64)
-        print(y_array)
-
-        with open(filename, 'wb') as file:
-            file.write(np.array([params['start_time']], dtype=np.float64).tobytes())
-            file.write(np.array([params['sampling_frequency']], dtype=np.float64).tobytes())
-            file.write(np.array([params['num_samples']], dtype=np.int32).tobytes())
-            file.write(y_array.tobytes())
-        print("Zapisano do pliku")
+        sig = None
+        if isinstance(signal, analog_signal.DiscreteAnalogSignal):
+            samples = int((int(self.d_entry.get()) - int(self.t1_entry.get())) * int(self.f_entry.get()))
+            sig = signal_conversion.discrete_sampling(signal, samples)
+        elif isinstance(signal, analog_signal.ContinuousAnalogSignal):
+            sig = signal_conversion.uniform_sampling(signal, int(self.f_entry.get()),
+                                                     float(self.t1_entry.get()),
+                                                     float(self.t1_entry.get() + self.d_entry.get()))
+        if sig is None:
+            raise ValueError("Niepoprawny sygnał")
+        self.show_info(fig, sig)
 
     def load_from_file(self):
         self.close_other()
         filename = self.file_name_entry.get() + '.bin'
-        with open(filename, 'rb') as file:
-            start_time = np.frombuffer(file.read(8), dtype=np.float64)[0]
-            sampling_frequency = np.frombuffer(file.read(8), dtype=np.float64)[0]
-            num_samples = np.frombuffer(file.read(4), dtype=np.int32)[0]
-
-            y_values = np.frombuffer(file.read(), dtype=np.float64)
-
-        t_values = np.linspace(start_time, start_time + num_samples / sampling_frequency, num_samples, endpoint=False)
-        self.current = {'t_values': t_values, 'y_values': y_values, 'samples': num_samples, 'start_time': start_time,
-                        'frequency': sampling_frequency, 'signal': None}
+        sig = digital_signal.DigitalSignal(file_path=filename)
 
         fig = plt.figure()
         ax1 = fig.add_subplot(2, 1, 1)
         ax2 = fig.add_subplot(2, 1, 2)
 
-        ax1.plot(t_values, y_values)
-        ax2.hist(y_values, 10, edgecolor='black')
-        self.show_info(fig, start_time, sampling_frequency, num_samples)
+        ax1.plot(sig.time, sig.samples)
+        ax2.hist(sig.samples, 10, edgecolor='black')
+        self.show_info(fig, sig)
 
-    def show_info(self, fig, f, t1, samples):
+    def show_info(self, fig, sig: digital_signal.DigitalSignal):
+        self.current = sig
         new_window = Toplevel(self.master)
         self.windows.append(new_window)
         new_window.title(self.title)
-        new_frame = SignalInfoFrame(new_window, self.current['y_values'], fig, f, t1, samples)
+        new_frame = SignalInfoFrame(new_window, sig.samples, fig, sig.sampling_rate, sig.start_time, len(sig.samples))
         new_frame.frame.grid(column=0, row=0)
 
     def close_other(self):

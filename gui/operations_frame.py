@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 from signal_info_frame import SignalInfoFrame
 from plot_creation_frame import PlotCreationFrame
 
+from api import digital_signal
+
 
 class OperationsFrame:
     def __init__(self, master, function_frame1: PlotCreationFrame, function_frame2: PlotCreationFrame):
@@ -39,9 +41,9 @@ class OperationsFrame:
 
     def execute_operation(self):
         self.close_other()
-        values1 = self.function_frame1.current['y_values']
-        values2 = self.function_frame2.current['y_values']
-        t_values = self.function_frame1.current['t_values']
+        values1 = self.function_frame1.current.samples
+        values2 = self.function_frame2.current.samples
+        t_values = self.function_frame1.current.time
 
         if len(values1) != len(values2):
             print("Sygnały muszą mieć taką samą liczbę próbek")
@@ -68,4 +70,4 @@ class OperationsFrame:
 
         ax1.plot(t_values, result)
         ax2.hist(result, 10, edgecolor='black')
-        self.show_info(result, fig, self.function_frame1.current['frequency'], self.function_frame1.current['start_time'], self.function_frame1.current['samples'], "Wynik operacji")
+        self.show_info(result, fig, self.function_frame1.current.sampling_rate, self.function_frame1.current.start_time, len(result), "Wynik operacji")
