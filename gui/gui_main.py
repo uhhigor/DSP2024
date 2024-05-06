@@ -2,6 +2,8 @@ from tkinter import Tk, ttk
 
 import plot_creation_frame
 from operations_frame import OperationsFrame
+from quantization_signal_frame import QuantizationSignalFrame
+from api import digital_signal
 
 root = Tk()
 root.title("CPS - Projekt")
@@ -25,5 +27,14 @@ pcs2.frame.grid(column=0, row=1)
 
 of = OperationsFrame(page2, pcs1, pcs2)
 of.frame.grid(column=0, row=2)
+
+page3 = ttk.Frame(notebook, padding=10)
+notebook.add(page3, text="Konwersja")
+
+pcs3 = plot_creation_frame.PlotCreationFrame(page3, "Sygnał")
+pcs3.frame.grid(column=0, row=0)
+
+of2 = QuantizationSignalFrame(page3, pcs3)
+of2.frame.grid(column=0, row=1)
 
 root.mainloop()
