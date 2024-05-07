@@ -14,19 +14,28 @@ class QuantizationSignalFrame:
         self.function_frame1 = function_frame1
         self.frame = ttk.Frame(self.master, padding="10")
         self.windows = []
-        self.signal_to_quantize = None
+        self.sampled = None
+        self.quantized = None
+        self.reconstructed = None
         self.time = []
         self.samples = []
+
+        self.selected_sampling = StringVar()
+
+        ttk.Button(self.frame, text="Wykonaj próbkowanie", command=self.execute_sampling).grid(column=1, row=0)
+        self.number_of_samples = StringVar()
+        self.number_of_samples_entry = ttk.Entry(self.frame, textvariable=self.number_of_samples)
+        self.number_of_samples_entry.grid(column=2, row=0)
 
         self.selected_quantization = StringVar()
         self.init_op_dropdown_quan()
 
-        ttk.Button(self.frame, text="Wykonaj kwantyzację", command=self.execute_quantization).grid(column=1, row=0)
+        ttk.Button(self.frame, text="Wykonaj kwantyzację", command=self.execute_quantization).grid(column=1, row=1)
 
         self.selected_reconstruction = StringVar()
         self.init_op_dropdown_recon()
 
-        ttk.Button(self.frame, text="Wykonaj rekonstrukcje", command=self.execute_reconstruction).grid(column=1, row=1)
+        ttk.Button(self.frame, text="Wykonaj rekonstrukcje", command=self.execute_reconstruction).grid(column=1, row=2)
 
     def init_op_dropdown_quan(self):
         quantization = ["None", "Kwantyzacja równomierna z zaokrągleniem"]
@@ -53,33 +62,45 @@ class QuantizationSignalFrame:
             window.destroy()
         self.windows.clear()
 
+    def execute_sampling(self):
+        self.close_other()
+        self.current_signal = self.function_frame1.current
+        number_of_samples = int(self.number_of_samples.get())
+
+        sampled = signal_conversion.conversion_sampling(self.current_signal, number_of_samples)
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        self.sampled = sampled
+        ax1.plot(self.function_frame1.current.time, self.function_frame1.current.samples)
+        ax1.scatter(self.sampled.time, self.sampled.samples)
+
+        self.show_info(sampled.samples, fig, sampled.sampling_rate, sampled.start_time, sampled.samples, "Próbkowanie")
+
     def execute_quantization(self):
         self.close_other()
-        self.signal_to_quantize = digital_signal.DigitalSignal(None, self.function_frame1.current.start_time,
-                                                               self.function_frame1.current.sampling_rate,
-                                                               self.function_frame1.current.samples,
-                                                               self.function_frame1.current.time)
         quantized = None
 
         quantization = self.selected_quantization.get()
         if quantization == "Kwantyzacja równomierna z zaokrągleniem":
-            quantized = signal_conversion.uniform_quantization(self.signal_to_quantize)
+            quantized = signal_conversion.uniform_quantization(self.sampled)
             self.time = quantized.time
             self.samples = quantized.samples
 
         fig = plt.figure()
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        ax1 = fig.add_subplot(111)
 
+        self.quantized = quantized
         ax1.plot(self.function_frame1.current.time, self.function_frame1.current.samples)
-        ax2.plot(quantized.time, quantized.samples)
+        ax1.scatter(self.sampled.time, self.sampled.samples)
+        ax1.scatter(self.quantized.time, self.quantized.samples)
 
         self.show_info(quantized.samples, fig, quantized, quantized.start_time,
                        quantized.samples, "Kwantyzacja")
 
     def execute_reconstruction(self):
         self.close_other()
-        signal_to_reconstruct = self.signal_to_quantize
+        signal_to_reconstruct = self.quantized
 
         reconstruction = self.selected_reconstruction.get()
         reconstructed = None
@@ -92,11 +113,11 @@ class QuantizationSignalFrame:
             reconstructed = signal_conversion.sinc_extrapolation(signal_to_reconstruct)
 
         fig = plt.figure()
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        ax1 = fig.add_subplot(111)
+        ax1.plot(self.function_frame1.current.time, self.function_frame1.current.samples)
+        ax1.plot(reconstructed.time, reconstructed.samples)
 
-        ax1.plot(self.time, self.samples)
-        ax2.plot(reconstructed.time, reconstructed.samples)
+        self.reconstructed = reconstructed
 
         self.show_info(reconstructed.samples, fig, reconstructed.sampling_rate, reconstructed.start_time,
                        reconstructed.samples, "Rekonstrukcja")

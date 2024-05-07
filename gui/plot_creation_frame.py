@@ -35,6 +35,7 @@ class PlotCreationFrame:
         self.params_frame = ttk.Frame(self.frame)
         self.params_frame.grid(column=0, row=2, columnspan=2, rowspan=6)
         self.current = None
+        self.current_analog = None
         self.title = title
 
         # Choose signal
@@ -194,6 +195,7 @@ class PlotCreationFrame:
         signal = self.create_signal()
         fig = self.plot_signal(signal)
         sig = None
+        self.current_analog = signal
         if isinstance(signal, analog_signal.DiscreteAnalogSignal):
             samples = int((int(self.d_entry.get()) - int(self.t1_entry.get())) * int(self.f_entry.get()))
             sig = signal_conversion.discrete_sampling(signal, samples)
