@@ -6,6 +6,9 @@ def average_value(y_values):
     n = 0
     sumxt = 0
     while n < samples:
+        if math.isnan(y_values[n]):
+            n += 1
+            continue
         sumxt += y_values[n]
         n += 1
 
@@ -17,6 +20,9 @@ def average_value_absolute(y_values):
     n = 0
     sumxt = 0
     while n < samples:
+        if math.isnan(y_values[n]):
+            n += 1
+            continue
         sumxt += math.fabs(y_values[n])
         n += 1
 
@@ -28,6 +34,9 @@ def average_power(y_values):
     n = 0
     sumxt = 0
     while n < samples:
+        if math.isnan(y_values[n]):
+            n += 1
+            continue
         sumxt += y_values[n] ** 2
         n += 1
 
@@ -40,6 +49,9 @@ def continuous_variance(y_values):
     sumxt = 0
     avg_value = average_value(y_values)
     while n < samples:
+        if math.isnan(y_values[n]):
+            n += 1
+            continue
         sumxt += (y_values[n] - avg_value) ** 2
         n += 1
 

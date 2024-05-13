@@ -225,7 +225,7 @@ class PlotCreationFrame:
         new_window = Toplevel(self.master)
         self.windows.append(new_window)
         new_window.title(self.title)
-        new_frame = SignalInfoFrame(new_window, sig.samples, fig, sig.sampling_rate, sig.start_time, len(sig.samples))
+        new_frame = SignalInfoFrame(new_window, sig.samples, sig.time, sig.sampling_rate, sig.start_time, len(sig.samples))
         new_frame.frame.grid(column=0, row=0)
 
     def close_other(self):
