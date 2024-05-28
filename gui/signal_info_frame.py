@@ -23,6 +23,10 @@ class SignalInfoFrame:
         self.start_time = start_time
         self.num_samples = num_samples
 
+        self.issampled = False
+        self.isquantized = False
+        self.isreconstructed = False
+
         self.avg_label = ttk.Label(self.frame, text="Wartość średnia sygnału: ")
         self.avg_label_value = ttk.Label(self.frame, text="")
         self.avg_abs_label = ttk.Label(self.frame, text="Wartość średnia bezwzględna sygnału: ")
@@ -73,7 +77,7 @@ class SignalInfoFrame:
         self.md_label.grid(column=2, row=8)
         self.md_label_value.grid(column=3, row=8)
 
-    def show(self, y_values, t_values, type="plot", color="blue"):
+    def show(self, y_values, t_values, type="plot", color="blue", y_1=None):
         self.avg_label_value.config(text=str(round(signal_parameters.average_value(y_values), 3)))
         self.avg_abs_label_value.config(text=str(round(signal_parameters.average_value_absolute(y_values), 3)))
         self.avg_power_label_value.config(text=str(round(signal_parameters.average_power(y_values), 3)))
@@ -81,19 +85,13 @@ class SignalInfoFrame:
         self.effective_label_value.config(text=str(round(signal_parameters.continuous_effective_value(y_values), 3)))
         plot = plt.figure()
         ax1 = plot.add_subplot(211)
-        ax2 = plot.add_subplot(212)
         if type == "plot":
             ax1.plot(t_values, y_values, color=color)
-            ax2.hist(y_values, bins=10, edgecolor='black', color='gray')
         elif type == "scatter":
-            display_y = []
-            display_t = []
-            number_of_samples = self.num_samples / int(self.number_of_samples.get())
-            for i in range(0, len(y_values), int(number_of_samples)):
-                display_y.append(y_values[i])
-                display_t.append(t_values[i])
-            ax1.scatter(display_t, display_y, 5, color=color)
-            ax2.hist(display_y, bins=10, edgecolor='black',  color='gray')
+            ax1.scatter(t_values, y_values, 5, color=color)
+        elif type == "scatterplot":
+            ax1.scatter(t_values, y_1, 5, color="red")
+            ax1.plot(t_values, y_values, color="blue")
         canvas = FigureCanvasTkAgg(plot, master=self.frame)
         canvas.draw()
         if color == "red":
@@ -130,30 +128,38 @@ class SignalInfoFrame:
         sampled_y = signal_conversion.conversion_sampling(self.init_y_values, int(self.number_of_samples.get()))
         self.y_values = sampled_y
         self.show(self.init_y_values, self.t_values)
-        self.show(self.y_values, self.t_values, "scatter", "red")
+        self.show(self.y_values, self.t_values, "plot", "red")
         self.calculate_measurements(self.init_y_values, self.y_values)
+        self.issampled = True
+        self.isquantized = False
+        self.isreconstructed = False
 
     def execute_quantization(self):
-        quantized = signal_conversion.uniform_quantization(self.y_values)
-        self.y_values = quantized
-        self.show(self.init_y_values, self.t_values)
-        self.show(self.y_values, self.t_values, "plot", "red")
-        self.calculate_measurements(self.init_y_values, self.y_values)
+        if not self.isquantized and self.issampled and not self.isreconstructed:
+            quantized = signal_conversion.uniform_quantization(self.y_values)
+            self.y_values = quantized
+            self.show(self.init_y_values, self.t_values)
+            self.show(self.y_values, self.t_values, "plot", "red")
+            self.calculate_measurements(self.init_y_values, self.y_values)
+            self.isquantized = True
 
     def execute_reconstruction(self):
-        reconstructed = None
-        if self.selected_reconstruction.get() == "Ekstrapolacja zerowego rzędu":
-            reconstructed = signal_conversion.zero_order_extrapolation(self.y_values,
-                                                                       int(self.number_of_samples.get()))
-        elif self.selected_reconstruction.get() == "Interpolacja pierwszego rzędu":
-            reconstructed = signal_conversion.first_order_extrapolation(self.y_values,
-                                                                        int(self.number_of_samples.get()))
-        elif self.selected_reconstruction.get() == "Rekonstrukcja w oparciu o funkcje sinc":
-            reconstructed = signal_conversion.sinc_extrapolation(self.y_values, int(self.number_of_samples.get()))
-        self.y_values = reconstructed
-        self.show(self.init_y_values, self.t_values)
-        self.show(self.y_values, self.t_values, "plot", "red")
-        self.calculate_measurements(self.init_y_values, self.y_values)
+        if not self.isreconstructed:
+            reconstructed = None
+            if self.selected_reconstruction.get() == "Ekstrapolacja zerowego rzędu":
+                reconstructed = signal_conversion.zero_order_extrapolation(self.y_values,
+                                                                           int(self.number_of_samples.get()))
+            elif self.selected_reconstruction.get() == "Interpolacja pierwszego rzędu":
+                reconstructed = signal_conversion.first_order_extrapolation(self.y_values,
+                                                                            int(self.number_of_samples.get()))
+            elif self.selected_reconstruction.get() == "Rekonstrukcja w oparciu o funkcje sinc":
+                reconstructed = signal_conversion.sinc_extrapolation(self.y_values, int(self.number_of_samples.get()))
+            y_1 = self.y_values
+            self.y_values = reconstructed
+            self.show(self.init_y_values, self.t_values)
+            self.show(self.y_values, self.t_values, "scatterplot", "red", y_1)
+            self.calculate_measurements(self.init_y_values, self.y_values)
+            self.isreconstructed = True
 
     def save_to_file(self):
         params = {
