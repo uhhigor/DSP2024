@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from zad3.api import analog_signal, signal_conversion, signal_convolution
+from zad3.api import analog_signal, signal_conversion, signal_zad3
 
 signal_map = {
     "Szum o rozkładzie jednostajnym": analog_signal.S1,
@@ -179,15 +179,35 @@ class SignalGenerator:
         self.show_plot(self.signal_var.get() + " - rekonstrukcja", "plot", False)
 
 
-class ConvolutionFrame:
+class zad3Frame:
     def __init__(self, master, s1Frame, s2Frame):
+        self.y_values = None
+        self.t_values = None
         self.frame = ttk.Frame(master, padding="10")
         self.s1Frame = s1Frame
         self.s2Frame = s2Frame
 
-        # Generate button
+        # Generate convolution button
         ttk.Button(self.frame, text="Wykonaj splot", command=lambda: self.execute_convolution()).grid(
             column=0, row=2, columnspan=2)
+
+        # Filtration
+        ttk.Label(self.frame, text="Filtracja: ").grid(column=0, row=3, columnspan=2)
+        ttk.Label(self.frame, text="Rząd filtru: ").grid(column=0, row=4)
+        self.filter_m_entry = ttk.Entry(self.frame)
+        self.filter_m_entry.grid(column=1, row=4)
+        ttk.Label(self.frame, text="Częstotliwość odcięcia F0: ").grid(column=0, row=5)
+        self.filter_f0_entry = ttk.Entry(self.frame)
+        self.filter_f0_entry.grid(column=1, row=5)
+        ttk.Label(self.frame, text="Częstotliwość próbkowania Fd: ").grid(column=0, row=6)
+        self.filter_fd_entry = ttk.Entry(self.frame)
+        self.filter_fd_entry.grid(column=1, row=6)
+        # window dropdown
+        self.window_var = StringVar()
+        ttk.OptionMenu(self.frame, self.window_var, "Okno prostokątne", "Okno prostokątne", "Okno Hamminga").grid(column=0, row=7)
+        ttk.Button(self.frame, text="Wykonaj filtrację", command=lambda: self.execute_filtration()).grid(column=1, row=7)
+
+
 
         fig, self.ax = plt.subplots()
         self.ax.figure.set_size_inches(2, 1.5)
@@ -206,9 +226,19 @@ class ConvolutionFrame:
         y1 = signal_conversion.real_sampling(signal1, num_samples_1)
         y2 = signal_conversion.real_sampling(signal2, num_samples_2)
 
-        y_values = signal_convolution.convolution(y1, y2)
-        new_t = np.linspace(s1.t_values[0], s1.t_values[-1], len(y_values))
-        self.show_plot("Splot", new_t, y_values)
+        self.y_values = signal_zad3.convolution(y1, y2)
+        self.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(self.y_values))
+        self.show_plot("Splot", self.t_values, self.y_values)
+
+    def execute_filtration(self):
+        m = int(self.filter_m_entry.get())
+        f0 = float(self.filter_f0_entry.get())
+        fd = int(self.filter_fd_entry.get())
+        window = None
+        if self.window_var.get() == "Okno Hamminga":
+            window = signal_zad3.hamming_window
+        self.y_values = signal_zad3.apply_low_pass_filter(self.y_values, m, f0, fd, window)
+        self.show_plot("Filtracja", self.t_values, self.y_values)
 
     def show_plot(self, title: str, t_values, y_values, clear: bool = True):
         if clear:
@@ -229,7 +259,7 @@ s1 = SignalGenerator(main_frame)
 s1.frame.pack(side="left")
 s2 = SignalGenerator(main_frame)
 s2.frame.pack(side="right")
-conv = ConvolutionFrame(main_frame, s1, s2)
+conv = zad3Frame(main_frame, s1, s2)
 conv.frame.pack(side="bottom")
 
 main_frame.pack()
