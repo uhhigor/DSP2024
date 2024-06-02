@@ -6,6 +6,15 @@ from api.analog_signal import ContinuousAnalogSignal, DiscreteAnalogSignal
 from api.digital_signal import DigitalSignal
 
 
+def real_sampling(y_values: [], number_of_samples: int) -> []:
+    N = len(y_values)
+    step = N // number_of_samples
+    x = np.zeros(number_of_samples, float)
+    for i in range(0, number_of_samples):
+        x[i] = y_values[i * step]
+    return x
+
+
 # S1 - próbkowanie równomierne sygnału ciągłego
 def uniform_sampling(y_values: [], number_of_samples):
     N = len(y_values)

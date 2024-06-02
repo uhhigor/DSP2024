@@ -1,9 +1,10 @@
 from tkinter import ttk, StringVar, Tk, font
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from zad3.api import analog_signal, signal_conversion
+from zad3.api import analog_signal, signal_conversion, signal_convolution
 
 signal_map = {
     "Szum o rozkładzie jednostajnym": analog_signal.S1,
@@ -87,8 +88,8 @@ class SignalGenerator:
             column=0, row=7, columnspan=2)
 
         fig, self.ax = plt.subplots()
-        self.ax.figure.set_size_inches(3, 2)
-        self.ax.tick_params(axis='both', labelsize=6)
+        self.ax.figure.set_size_inches(2, 1.5)
+        self.ax.tick_params(axis='both', labelsize=3)
         self.canvas = FigureCanvasTkAgg(fig, master=self.frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(column=0, row=8, columnspan=2)
@@ -100,16 +101,24 @@ class SignalGenerator:
         # Sampling
         self.sampling_frequency_entry = ttk.Entry(self.frame)
         self.sampling_frequency_entry.grid(column=0, row=10)
-        ttk.Button(self.frame, text="Wykonaj próbkowanie", command=lambda: self.execute_sampling()).grid(column=1, row=10, columnspan=2)
+        ttk.Button(self.frame, text="Wykonaj próbkowanie", command=lambda: self.execute_sampling()).grid(column=1,
+                                                                                                         row=10,
+                                                                                                         columnspan=2)
 
         # Quantization
-        ttk.Button(self.frame, text="Wykonaj kwantyzację", command=lambda: self.execute_quantization()).grid(column=1, row=12, columnspan=2)
+        ttk.Button(self.frame, text="Wykonaj kwantyzację", command=lambda: self.execute_quantization()).grid(column=1,
+                                                                                                             row=12,
+                                                                                                             columnspan=2)
 
         # Reconstruction
         self.reconstruction_var = StringVar()
-        self.reconstruction_dropdown = ttk.OptionMenu(self.frame, self.reconstruction_var, "Interpolacja zerowego rzędu", "Interpolacja zerowego rzędu", "Interpolacja pierwszego rzędu", "Rekonstrukcja w oparciu o funkcje sinc")
+        self.reconstruction_dropdown = ttk.OptionMenu(self.frame, self.reconstruction_var,
+                                                      "Interpolacja zerowego rzędu", "Interpolacja zerowego rzędu",
+                                                      "Interpolacja pierwszego rzędu",
+                                                      "Rekonstrukcja w oparciu o funkcje sinc")
         self.reconstruction_dropdown.grid(column=0, row=13)
-        ttk.Button(self.frame, text="Wykonaj rekonstrukcję", command=lambda: self.execute_reconstruction()).grid(column=1, row=13)
+        ttk.Button(self.frame, text="Wykonaj rekonstrukcję", command=lambda: self.execute_reconstruction()).grid(
+            column=1, row=13)
 
     def generate_analog_signal(self):
         signal = signal_map[self.signal_var.get()]
@@ -159,12 +168,55 @@ class SignalGenerator:
         num_samples = int(int(self.duration_entry.get()) * int(self.sampling_frequency_entry.get()))
         self.show_plot(self.signal_var.get() + " - rekonstrukcja", "scatter", True)
         if self.reconstruction_var.get() == "Interpolacja zerowego rzędu":
-            self.y_values = signal_conversion.zero_order_extrapolation(self.y_values, num_samples)
+            self.y_values = signal_conversion.zero_order_extrapolation(self.y_values,
+                                                                       num_samples)
         elif self.reconstruction_var.get() == "Interpolacja pierwszego rzędu":
-            self.y_values = signal_conversion.first_order_extrapolation(self.y_values, num_samples)
+            self.y_values = signal_conversion.first_order_extrapolation(self.y_values,
+                                                                        num_samples)
         elif self.reconstruction_var.get() == "Rekonstrukcja w oparciu o funkcje sinc":
-            self.y_values = signal_conversion.sinc_extrapolation(self.y_values, num_samples)
+            self.y_values = signal_conversion.sinc_extrapolation(self.y_values,
+                                                                 num_samples)
         self.show_plot(self.signal_var.get() + " - rekonstrukcja", "plot", False)
+
+
+class ConvolutionFrame:
+    def __init__(self, master, s1Frame, s2Frame):
+        self.frame = ttk.Frame(master, padding="10")
+        self.s1Frame = s1Frame
+        self.s2Frame = s2Frame
+
+        # Generate button
+        ttk.Button(self.frame, text="Wykonaj splot", command=lambda: self.execute_convolution()).grid(
+            column=0, row=2, columnspan=2)
+
+        fig, self.ax = plt.subplots()
+        self.ax.figure.set_size_inches(2, 1.5)
+        self.ax.tick_params(axis='both', labelsize=3)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().grid(column=0, row=3, columnspan=2)
+
+    def execute_convolution(self):
+        signal1 = self.s1Frame.y_values
+        signal2 = self.s2Frame.y_values
+
+        num_samples_1 = int(int(self.s1Frame.duration_entry.get()) * int(self.s1Frame.sampling_frequency_entry.get()))
+        num_samples_2 = int(int(self.s2Frame.duration_entry.get()) * int(self.s2Frame.sampling_frequency_entry.get()))
+
+        y1 = signal_conversion.real_sampling(signal1, num_samples_1)
+        y2 = signal_conversion.real_sampling(signal2, num_samples_2)
+
+        y_values = signal_convolution.convolution(y1, y2)
+        new_t = np.linspace(s1.t_values[0], s1.t_values[-1], len(y_values))
+        self.show_plot("Splot", new_t, y_values)
+
+    def show_plot(self, title: str, t_values, y_values, clear: bool = True):
+        if clear:
+            self.ax.clear()
+            self.canvas.draw()
+        self.ax.set_title(title, fontsize=6)
+        self.ax.plot(t_values, y_values, linewidth=0.5)
+        self.canvas.draw()
 
 
 # GUI setup
@@ -173,8 +225,12 @@ root = Tk()
 root.title("CPS - Zadanie 3")
 main_frame = ttk.Frame(root, padding="10")
 
-SignalGenerator(main_frame).frame.pack(side="left")
-SignalGenerator(main_frame).frame.pack(side="right")
+s1 = SignalGenerator(main_frame)
+s1.frame.pack(side="left")
+s2 = SignalGenerator(main_frame)
+s2.frame.pack(side="right")
+conv = ConvolutionFrame(main_frame, s1, s2)
+conv.frame.pack(side="bottom")
 
 main_frame.pack()
 root.mainloop()
