@@ -40,7 +40,7 @@ def apply_low_pass_filter(y_values: np.ndarray, M: int, f_0: float, sample_rate:
 
     h /= np.sum(h)
 
-    filtered_y = np.convolve(y_values, h, mode='same')
+    filtered_y = convolution(y_values, h)
 
     return filtered_y
 

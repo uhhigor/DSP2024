@@ -126,6 +126,7 @@ class SignalGenerator:
         start_time = float(self.start_time_entry.get())
         duration = float(self.duration_entry.get())
         period = float(self.period_entry.get())
+        frequency = float(1.0 / period)
 
         if self.signal_var.get() == "Skok jednostkowy":
             ts = float(self.ts_entry.get())
@@ -138,7 +139,7 @@ class SignalGenerator:
         else:
             s = signal(amplitude, start_time, duration, period)
         self.t_values, self.y_values = s.get_simulated_values(start_time, start_time + duration)
-        self.show_plot(self.signal_var.get(), "plot")
+        self.show_plot(self.signal_var.get() + " " + str(frequency) + "Hz", "plot")
 
     def show_plot(self, title: str, plot_type: str, clear: bool = True):
         if clear:
@@ -238,6 +239,7 @@ class zad3Frame:
         if self.window_var.get() == "Okno Hamminga":
             window = signal_zad3.hamming_window
         self.y_values = signal_zad3.apply_low_pass_filter(self.y_values, m, f0, fd, window)
+        self.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(self.y_values))
         self.show_plot("Filtracja", self.t_values, self.y_values)
 
     def show_plot(self, title: str, t_values, y_values, clear: bool = True):
