@@ -1,53 +1,30 @@
-import numpy as np
+import math
 
 
-def convolution(y1, y2):
-    x = y1
-    h = y2
-    n = len(x)
-    m = len(h)
-    y = np.zeros(n + m - 1, float)
-    for i in range(0, n + m - 1):
-        t = 0
-        for j in range(0, n):
-            if 0 <= i - j <= m - 1:
-                t += x[j] * h[i - j]
-        y[i] = t
-    return y
-
-
-def apply_low_pass_filter(y_values: np.ndarray, M: int, f_0: float, sample_rate: float, window_func=None) -> np.ndarray:
-    # Calculate the cutoff frequency in radians per sample
-    omega_c = 2 * np.pi * f_0 / sample_rate
-    # Create an array for the filter coefficients
-    h = np.zeros(M)
-    # Calculate the filter coefficients (sinc function)
+def get_low_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
+    t_values = []
+    y_values = []
     for n in range(M):
-        m = n - (M - 1) / 2
-        if m == 0:
-            h[n] = omega_c / np.pi
+        t_values.append(n * (1.0 / fp))
+        k = fp / f0
+        c = (M - 1) / 2
+        if n == c:
+            res = 2.0 / k
         else:
-            h[n] = np.sin(omega_c * m) / (np.pi * m)
+            res = math.sin(2.0 * math.pi * (n - c) / k) / (math.pi * (n - c))
 
-    if window_func is None:
-        # rectangular window
-        window = np.ones(M)
-    else:
-        # Apply the window function
-        window = window_func(M)
-
-    h *= window
-
-    h /= np.sum(h)
-
-    filtered_y = convolution(y_values, h)
-
-    return filtered_y
+        if window is not None:
+            res *= window(M, n)
+        y_values.append(res)
+    return t_values, y_values
 
 
+def get_high_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
+    t_values, y_values = get_low_pass_filter(M, f0, fp, window)
+    for i in range(len(y_values)):
+        y_values[i] *= math.pow(-1, i)
+    return t_values, y_values
 
-def hamming_window(M: int) -> np.ndarray:
-    window = np.zeros(M)
-    for n in range(M):
-        window[n] = 0.53836 - 0.46164 * np.cos(2 * np.pi * n / M)
-    return window
+
+def hamming_window(M: int, n: float) -> float:
+    return 0.53836 - 0.46164 * math.cos(2.0 * math.pi * n / M)

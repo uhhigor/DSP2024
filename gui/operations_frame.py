@@ -2,10 +2,8 @@ from tkinter import ttk, StringVar, Toplevel
 
 from matplotlib import pyplot as plt
 
-from signal_info_frame import SignalInfoFrame
 from plot_creation_frame import PlotCreationFrame
-
-from api import digital_signal
+from signal_info_frame import SignalInfoFrame
 
 
 class OperationsFrame:
