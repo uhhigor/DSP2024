@@ -30,3 +30,41 @@ def convolution(y1: [], y2: []):
                 t += x[j] * h[i - j]
         y[i] = t
     return y
+
+
+def correlation_convolve(y1: [], y2: []) -> []:
+    y2_reversed = y2[::-1]
+    return convolution(y1, y2_reversed)
+
+
+def correlation(y1: [], t1: [], y2: [], t2: []) -> []:
+    len1 = len(y1)
+    len2 = len(y2)
+    y = []
+    for i in range(len1 + len2 - 1):
+        value = 0
+        if i >= (len1 - 1):
+            k1min = i - (len2 - 1)
+        else:
+            k1min = 0
+
+        if i < (len1 - 1):
+            k1max = i
+        else:
+            k1max = (len1 - 1)
+
+        if i <= (len2 - 1):
+            k2min = (len2 - 1 - i)
+        else:
+            k2min = 0
+
+        k1 = k1min
+        k2 = k2min
+        while k1 <= k1max:
+            value += y1[k1] * y2[k2]
+            k1 += 1
+            k2 += 1
+        y.append(value)
+
+    t = np.linspace(t1[0], t1[-1] + t2[-1], len(y))
+    return t, y

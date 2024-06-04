@@ -22,6 +22,7 @@ s1Frame.pack()
 
 ttk.Separator(main_frame, orient='horizontal').pack(fill='x')
 
+
 def execute_operation(s2, param):
     signal1 = s1.y_values
     signal2 = s2.y_values
@@ -42,7 +43,7 @@ def execute_operation(s2, param):
         s1.y_values = operations.div(y1, y2)
 
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
-    s1.show_plot("", "scatterplot")
+    s1.show_plot("", "plot")
     operations_window.destroy()
 
 
@@ -65,6 +66,7 @@ def open_window_operation(param):
     s2.frame.pack()
     ttk.Button(operations_window, text="Wykonaj operację", command=lambda: execute_operation(s2, param)).pack()
 
+
 # Operations line
 
 operations_frame = ttk.Frame(main_frame)
@@ -76,6 +78,7 @@ operations_frame.pack()
 
 ttk.Separator(main_frame, orient='horizontal').pack(fill='x', side='top')
 
+
 def open_window_convolution():
     global zad3_window
     if zad3_window is not None:
@@ -85,6 +88,16 @@ def open_window_convolution():
     s2 = SignalGenerator(zad3_window)
     s2.frame.pack()
     ttk.Button(zad3_window, text="Wykonaj splot", command=lambda: execute_convolution(s2)).pack()
+
+def open_window_correlation():
+    global zad3_window
+    if zad3_window is not None:
+        zad3_window.destroy()
+    zad3_window = tkinter.Toplevel(main_frame)
+    zad3_window.title("Korelacja")
+    s2 = SignalGenerator(zad3_window)
+    s2.frame.pack()
+    ttk.Button(zad3_window, text="Wykonaj korelacje", command=lambda: execute_correlation(s2)).pack()
 
 
 def execute_convolution(s2):
@@ -99,17 +112,35 @@ def execute_convolution(s2):
 
     s1.y_values = operations.convolution(y1, y2)
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
-    s1.show_plot("Splot", "scatterplot")
+    s1.show_plot("", "plot")
     zad3_window.destroy()
+
+def execute_correlation(s2):
+    signal1 = s1.y_values
+    signal2 = s2.y_values
+
+    num_samples_1 = int(float(s1.duration_entry.get()) * int(s1.sampling_frequency_entry.get()))
+    num_samples_2 = int(float(s2.duration_entry.get()) * int(s2.sampling_frequency_entry.get()))
+
+    y1 = signal_conversion.real_sampling(signal1, num_samples_1)
+    y2 = signal_conversion.real_sampling(signal2, num_samples_2)
+
+    s1.y_values = operations.correlation_convolve(y1, y2)
+    s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
+    s1.show_plot("", "plot")
+    zad3_window.destroy()
+
 
 zad3_operations_frame = ttk.Frame(main_frame)
 ttk.Button(zad3_operations_frame, text="Splot", command=lambda: open_window_convolution()).pack(side='left')
+ttk.Button(zad3_operations_frame, text="Korelacja", command=lambda: open_window_correlation()).pack(side='left')
+zad3_operations_frame.pack()
 
 
 def execute_filtration(filterwindow):
     s1.y_values = operations.convolution(s1.y_values, filterwindow.y_values)
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
-    s1.show_plot("Filtracja", "scatterplot")
+    s1.show_plot("", "plot")
 
 
 def execute_create_filter_window():
