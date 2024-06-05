@@ -15,12 +15,12 @@ root = Tk()
 root.title("CPS - Zadanie 3")
 main_frame = ttk.Frame(root, padding="10")
 
+
+
 s1Frame = ttk.Frame(main_frame)
 s1 = SignalGenerator(s1Frame)
 s1.frame.pack()
-s1Frame.pack()
-
-ttk.Separator(main_frame, orient='horizontal').pack(fill='x')
+s1Frame.pack(side='left')
 
 
 def execute_operation(s2, param):
@@ -74,7 +74,7 @@ ttk.Button(operations_frame, text="Dodawanie", command=lambda: open_window_opera
 ttk.Button(operations_frame, text="Odejmowanie", command=lambda: open_window_operation("sub")).pack(side='left')
 ttk.Button(operations_frame, text="Mnożenie", command=lambda: open_window_operation("mul")).pack(side='left')
 ttk.Button(operations_frame, text="Dzielenie", command=lambda: open_window_operation("div")).pack(side='left')
-operations_frame.pack()
+operations_frame.pack(side='top')
 
 ttk.Separator(main_frame, orient='horizontal').pack(fill='x', side='top')
 
@@ -88,6 +88,7 @@ def open_window_convolution():
     s2 = SignalGenerator(zad3_window)
     s2.frame.pack()
     ttk.Button(zad3_window, text="Wykonaj splot", command=lambda: execute_convolution(s2)).pack()
+
 
 def open_window_correlation():
     global zad3_window
@@ -115,6 +116,7 @@ def execute_convolution(s2):
     s1.show_plot("", "plot")
     zad3_window.destroy()
 
+
 def execute_correlation(s2):
     signal1 = s1.y_values
     signal2 = s2.y_values
@@ -134,7 +136,7 @@ def execute_correlation(s2):
 zad3_operations_frame = ttk.Frame(main_frame)
 ttk.Button(zad3_operations_frame, text="Splot", command=lambda: open_window_convolution()).pack(side='left')
 ttk.Button(zad3_operations_frame, text="Korelacja", command=lambda: open_window_correlation()).pack(side='left')
-zad3_operations_frame.pack()
+zad3_operations_frame.pack(side='top')
 
 
 def execute_filtration(filterwindow):

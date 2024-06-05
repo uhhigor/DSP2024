@@ -92,7 +92,7 @@ class SignalGenerator:
             column=0, row=7, columnspan=2)
 
         fig, self.ax = plt.subplots()
-        self.ax.figure.set_size_inches(2, 1.5)
+        fig.set_size_inches(3, 2)
         self.ax.tick_params(axis='both', labelsize=3)
         self.canvas = FigureCanvasTkAgg(fig, master=self.frame)
         self.canvas.draw()
