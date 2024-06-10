@@ -61,6 +61,9 @@ class CorrelationDistanceMeter:
 
         return result
 
+    def get_receiver_t_values(self):
+        return self.t_values
+
     def receiver_get_distance(self, correlation_samples: [], frequency, signal_speed):
         midpoint = int(len(correlation_samples) / 2)
         right = correlation_samples[midpoint:]

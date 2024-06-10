@@ -60,7 +60,7 @@ def correlation(y1: [], t1: [], y2: [], t2: []) -> []:
 
         k1 = k1min
         k2 = k2min
-        while k1 <= k1max:
+        while k1 <= k1max and k2 <= (len2 - 1):
             value += y1[k1] * y2[k2]
             k1 += 1
             k2 += 1
