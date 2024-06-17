@@ -1,7 +1,11 @@
 import cmath
+import copy
 import math
 
 import numpy as np
+from typing import List
+
+from matplotlib import pyplot as plt
 
 
 def add(y1: [], y2: []):
@@ -73,8 +77,16 @@ def correlation(y1: [], t1: [], y2: [], t2: []) -> []:
     return t, y
 
 
+def next_lower_power_of_2(x):
+    return 2**(x.bit_length() - 1)
+
+
 def discrete_transformation_Fourier(y_values: []) -> []:
     N = len(y_values)
+    N_padded = next_lower_power_of_2(N)
+    y_values = y_values[:N_padded]
+    N = len(y_values)
+
     result = []
     for m in range(N):
         sum = 0
@@ -84,10 +96,10 @@ def discrete_transformation_Fourier(y_values: []) -> []:
     return result
 
 
-# def fast_discrete_fourier_transform(y_values: []) -> []:
-#     return np.fft.fft(y_values)
-
 def fast_discrete_fourier_transform(y_values: []) -> []:
+    N = len(y_values)
+    N_padded = next_lower_power_of_2(N)
+    y_values = y_values[:N_padded]
     y_values = mix_samples(y_values)
     W = calculate_vector_of_w_params(len(y_values))
 
@@ -131,18 +143,20 @@ def reverse_bits(value, numberOfBits):
     return reversed_value
 
 
-def mix_samples(y_values: []):
-    N = len(y_values)
-    numberOfBits = N.bit_length() - 1
-
+def mix_samples(samples):
+    N = len(samples)
+    numberOfBits = int(np.log2(N))
+    mixed_samples = np.zeros(N, dtype=complex)
     for i in range(N):
-        newIndex = reverse_bits(i, numberOfBits)
-        if newIndex > i:
-            y_values[i], y_values[newIndex] = y_values[newIndex], y_values[i]
-    return y_values
+        reversed_i = reverse_bits(i, numberOfBits)
+        mixed_samples[reversed_i] = samples[i]
+    return mixed_samples
 
 
 def discrete_cosine_transform(y_values: []) -> []:
+    N = len(y_values)
+    N_padded = next_lower_power_of_2(N)
+    y_values = y_values[:N_padded]
     N = len(y_values)
     result = []
     for m in range(N):
@@ -158,6 +172,9 @@ def discrete_cosine_transform(y_values: []) -> []:
 
 
 def walsh_hadamard_transform(y_values: []) -> []:
+    N = len(y_values)
+    N_padded = next_lower_power_of_2(N)
+    y_values = y_values[:N_padded]
     N = len(y_values)
     result = []
     for k in range(N):

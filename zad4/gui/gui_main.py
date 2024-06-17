@@ -1,5 +1,5 @@
 # GUI setup
-import cmath
+import time
 import pickle
 import tkinter.filedialog
 import tkinter
@@ -177,6 +177,7 @@ def plot_complex_signal(y_values: [], mode='W1'):
     frequencies = np.arange(N)
 
     real_parts, imag_parts, magnitudes, phases = prepare_output(y_values)
+    fig = None
 
     if mode == 'W1':
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
@@ -193,7 +194,6 @@ def plot_complex_signal(y_values: [], mode='W1'):
         ax2.legend()
 
         plt.suptitle('Frequency Domain Representation (W1)')
-        return fig
 
     elif mode == 'W2':
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
@@ -210,28 +210,46 @@ def plot_complex_signal(y_values: [], mode='W1'):
         ax2.legend()
 
         plt.suptitle('Frequency Domain Representation (W2)')
-        return fig
+    elif mode == 'COS' or mode == 'WH':
+        fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+        ax.set_xlabel('Frequency')
+        ax.set_ylabel('Magnitude')
+        plt.plot(frequencies, y_values, label='Magnitude')
+
+    return fig
 
 
 def execute_transformation(param):
+    start_time = time.time()
+    end_time = 0
     if param == "DFT":
         s1.y_values = operations.discrete_transformation_Fourier(s1.y_values)
+        end_time = time.time()
+        exec_time = end_time - start_time
         fig1 = plot_complex_signal(s1.y_values, 'W1')
         fig2 = plot_complex_signal(s1.y_values, 'W2')
-        show_plots_in_gui(fig1)
-        show_plots_in_gui(fig2)
+        show_plots_in_gui(fig1, exec_time)
+        show_plots_in_gui(fig2, exec_time)
     elif param == "FFT":
         s1.y_values = operations.fast_discrete_fourier_transform(s1.y_values)
+        end_time = time.time()
+        exec_time = end_time - start_time
         fig1 = plot_complex_signal(s1.y_values, 'W1')
         fig2 = plot_complex_signal(s1.y_values, 'W2')
-        show_plots_in_gui(fig1)
-        show_plots_in_gui(fig2)
+        show_plots_in_gui(fig1, exec_time)
+        show_plots_in_gui(fig2, exec_time)
     elif param == "DCT II":
         s1.y_values = operations.discrete_cosine_transform(s1.y_values)
+        end_time = time.time()
+        exec_time = end_time - start_time
+        fig = plot_complex_signal(s1.y_values, 'COS')
+        show_plots_in_gui(fig, exec_time)
     elif param == "WHT":
         s1.y_values = operations.walsh_hadamard_transform(s1.y_values)
-    # print(len(s1.y_values))
-    # print(len(s1.t_values))
+        end_time = time.time()
+        exec_time = end_time - start_time
+        fig = plot_complex_signal(s1.y_values, 'WH')
+        show_plots_in_gui(fig, exec_time)
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
     s1.show_plot("", "plot")
 
@@ -257,17 +275,17 @@ def load_parameters_from_file():
             parameters = pickle.load(f)
             s1.t_values = parameters['t_values']
             s1.y_values = parameters['y_values']
-            print(len(s1.y_values))
-            print(len(s1.t_values))
             s1.show_plot("", "plot")
 
 
-def show_plots_in_gui(fig):
+def show_plots_in_gui(fig, exec_time):
     window = tkinter.Toplevel(main_frame)
     window.title("Wykres")
     canvas = FigureCanvasTkAgg(fig, master=window)
     canvas.draw()
     canvas.get_tk_widget().pack(fill=tkinter.BOTH, expand=1)
+    canvas.get_tk_widget().grid(column=0, row=0)
+    ttk.Label(window, text="Czas wykonania: " + str(round(exec_time, 5))).grid(column=0, row=1)
 
 ########################################
 
