@@ -159,6 +159,12 @@ class SignalGenerator:
             self.ax.scatter(self.t_values, self.y_values, s=0.2)
             self.ax.plot(self.t_values, self.y_values, linewidth=0.5)
 
+        y_min = min(self.y_values)
+        y_max = max(self.y_values)
+        y_min = min(y_min - 0.5, -float(self.amplitude_entry.get()))
+        y_max = max(y_max + 0.5, float(self.amplitude_entry.get()))
+        self.ax.set_ylim(y_min, y_max)
+
         self.canvas.draw()
 
     def execute_sampling(self):

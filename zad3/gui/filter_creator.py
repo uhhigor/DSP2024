@@ -30,9 +30,9 @@ class filter_creator_frame:
         self.filter_f0_entry = ttk.Entry(self.frame)
         self.filter_f0_entry.insert(0, "1")
         self.filter_f0_entry.grid(column=1, row=6)
-        ttk.Label(self.frame, text="Częstotliwość próbkowania Fd: ").grid(column=0, row=7)
+        ttk.Label(self.frame, text="Częstotliwość próbkowania Fp: ").grid(column=0, row=7)
         self.filter_fd_entry = ttk.Entry(self.frame)
-        self.filter_fd_entry.insert(0, "100")
+        self.filter_fd_entry.insert(0, "10000")
         self.filter_fd_entry.grid(column=1, row=7)
         # window dropdown
         self.window_var = StringVar()
@@ -51,14 +51,14 @@ class filter_creator_frame:
     def execute_create_filter(self):
         m = int(self.filter_m_entry.get())
         f0 = float(self.filter_f0_entry.get())
-        fd = int(self.filter_fd_entry.get())
+        fp = int(self.filter_fd_entry.get())
         window = None
         if self.window_var.get() == "Okno Hamminga":
             window = signal_zad3.hamming_window
         if self.type_var.get() == "dolnoprzepustowy":
-            self.t_values, self.y_values = signal_zad3.get_low_pass_filter(m, f0, fd, window)
+            self.t_values, self.y_values = signal_zad3.get_low_pass_filter(m, f0, fp, window)
         elif self.type_var.get() == "górnoprzepustowy":
-            self.t_values, self.y_values = signal_zad3.get_high_pass_filter(m, f0, fd, window)
+            self.t_values, self.y_values = signal_zad3.get_high_pass_filter(m, f0, fp, window)
         self.show_plot("Filtr", self.t_values, self.y_values)
 
     def show_plot(self, title: str, t_values, y_values, clear: bool = True):

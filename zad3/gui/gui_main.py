@@ -111,7 +111,7 @@ def execute_convolution(s2):
     y1 = signal_conversion.real_sampling(signal1, num_samples_1)
     y2 = signal_conversion.real_sampling(signal2, num_samples_2)
 
-    s1.y_values = operations.convolution(y1, y2)
+    s1.y_values = np.convolve(y1, y2)
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
     s1.show_plot("", "plot")
     zad3_window.destroy()
@@ -140,7 +140,7 @@ zad3_operations_frame.pack(side='top')
 
 
 def execute_filtration(filterwindow):
-    s1.y_values = operations.convolution(s1.y_values, filterwindow.y_values)
+    s1.y_values = np.convolve(s1.y_values, filterwindow.y_values)
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
     s1.show_plot("", "plot")
 

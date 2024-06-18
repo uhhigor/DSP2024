@@ -22,7 +22,7 @@ def get_low_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
 def get_high_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
     t_values, y_values = get_low_pass_filter(M, f0, fp, window)
     for i in range(len(y_values)):
-        y_values[i] *= math.pow(-1, i)
+        y_values[i] *= -1
     return t_values, y_values
 
 
