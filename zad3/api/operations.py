@@ -37,7 +37,7 @@ def correlation_convolve(y1: [], y2: []) -> []:
     return np.convolve(y1, y2_reversed)
 
 
-def correlation(y1: [], t1: [], y2: [], t2: []) -> []:
+def correlation(y1: [], y2: []) -> []:
     len1 = len(y1)
     len2 = len(y2)
     y = []
@@ -66,5 +66,4 @@ def correlation(y1: [], t1: [], y2: [], t2: []) -> []:
             k2 += 1
         y.append(value)
 
-    t = np.linspace(t1[0], t1[-1] + t2[-1], len(y))
-    return y, t
+    return y
