@@ -81,7 +81,8 @@ def start_distance_meter():
     distance_meter = CorrelationDistanceMeter(transmitter_measurments_no,
                                               transmitter_real_object_speed, transmitter_signal_speed_abstract,
                                               receiver_signal_period, receiver_sampling_frequency,
-                                              receiver_buffers_length, receiver_report_period, fixed_time_checkbox.get())
+                                              receiver_buffers_length, receiver_report_period,
+                                              fixed_time_checkbox.get())
 
     original_values, received_values, t_values, diff, shifts, speed = distance_meter.calculate()
     for i in range(len(t_values)):
@@ -118,10 +119,11 @@ data_table.pack()
 speedLabel = ttk.Label(main_frame, text="Calculated average speed: ")
 speedLabel.pack()
 
-
 ########################################
 # play button
 playing = True
+
+
 def switch_anim():
     global playing
     if distance_meter is not None:

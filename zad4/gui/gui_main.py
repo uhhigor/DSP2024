@@ -223,32 +223,32 @@ def execute_transformation(param):
     start_time = time.time()
     end_time = 0
     if param == "DFT":
-        s1.y_values = operations.discrete_transformation_Fourier(s1.y_values)
+        y_values = operations.discrete_transformation_Fourier(s1.y_values)
         end_time = time.time()
         exec_time = end_time - start_time
-        fig1 = plot_complex_signal(s1.y_values, 'W1')
-        fig2 = plot_complex_signal(s1.y_values, 'W2')
+        fig1 = plot_complex_signal(y_values, 'W1')
+        fig2 = plot_complex_signal(y_values, 'W2')
         show_plots_in_gui(fig1, exec_time)
         show_plots_in_gui(fig2, exec_time)
     elif param == "FFT":
-        s1.y_values = operations.fast_discrete_fourier_transform(s1.y_values)
+        y_values = operations.fast_discrete_fourier_transform(s1.y_values)
         end_time = time.time()
         exec_time = end_time - start_time
-        fig1 = plot_complex_signal(s1.y_values, 'W1')
-        fig2 = plot_complex_signal(s1.y_values, 'W2')
+        fig1 = plot_complex_signal(y_values, 'W1')
+        fig2 = plot_complex_signal(y_values, 'W2')
         show_plots_in_gui(fig1, exec_time)
         show_plots_in_gui(fig2, exec_time)
     elif param == "DCT II":
-        s1.y_values = operations.discrete_cosine_transform(s1.y_values)
+        y_values = operations.discrete_cosine_transform(s1.y_values)
         end_time = time.time()
         exec_time = end_time - start_time
-        fig = plot_complex_signal(s1.y_values, 'COS')
+        fig = plot_complex_signal(y_values, 'COS')
         show_plots_in_gui(fig, exec_time)
     elif param == "WHT":
-        s1.y_values = operations.walsh_hadamard_transform(s1.y_values)
+        y_values = operations.walsh_hadamard_transform(s1.y_values)
         end_time = time.time()
         exec_time = end_time - start_time
-        fig = plot_complex_signal(s1.y_values, 'WH')
+        fig = plot_complex_signal(y_values, 'WH')
         show_plots_in_gui(fig, exec_time)
     s1.t_values = np.linspace(s1.t_values[0], s1.t_values[-1], len(s1.y_values))
     s1.show_plot("", "plot")
@@ -293,7 +293,7 @@ def show_plots_in_gui(fig, exec_time):
 transformation_frame = ttk.Frame(main_frame)
 ttk.Separator(main_frame, orient='horizontal').pack(fill='x', side='top')
 ttk.Button(transformation_frame, text="DFT", command=lambda: execute_transformation("DFT")).pack(side='left')
-ttk.Button(transformation_frame, text="FFT", command=lambda: execute_transformation("FFT")).pack(side='left')
+ttk.Button(transformation_frame, text="DIT FFT", command=lambda: execute_transformation("FFT")).pack(side='left')
 ttk.Button(transformation_frame, text="DCT II", command=lambda: execute_transformation("DCT II")).pack(side='left')
 ttk.Button(transformation_frame, text="TWH", command=lambda: execute_transformation("WHT")).pack(side='left')
 transformation_frame.pack(side='top')

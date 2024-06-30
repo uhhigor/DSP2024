@@ -54,7 +54,7 @@ class zad3Frame:
 
     def execute_filtration(self):
         filter_y_values = self.filter_creator.y_values
-        self.y_values = signal_zad3.convolution(self.y_values, filter_y_values)
+        self.y_values = np.convolve(self.y_values, filter_y_values, mode="same")
         #self.t_values = np.linspace(self.s1Frame.t_values[0], self.s1Frame.t_values[-1], len(self.y_values))
         self.show_plot("Filtracja", self.t_values, self.y_values)
 

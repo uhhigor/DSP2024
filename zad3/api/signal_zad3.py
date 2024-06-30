@@ -1,5 +1,7 @@
 import math
 
+import numpy as np
+
 
 def get_low_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
     t_values = []
@@ -19,11 +21,14 @@ def get_low_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
     return t_values, y_values
 
 
-def get_high_pass_filter(M: int, f0: float, fp: float, window: () = None) -> []:
-    t_values, y_values = get_low_pass_filter(M, f0, fp, window)
-    for i in range(len(y_values)):
-        y_values[i] *= -1
-    return t_values, y_values
+def get_high_pass_filter(M: int, f0: float, fp: float, window: () = None) -> tuple:
+    t_values, low_pass = get_low_pass_filter(M, f0, fp, window)
+
+    high_pass = []
+    for i in range(len(low_pass)):
+        high_pass.append(low_pass[i] * math.pow(-1, i))
+
+    return t_values, high_pass
 
 
 def hamming_window(M: int, n: float) -> float:
